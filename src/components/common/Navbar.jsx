@@ -14,6 +14,7 @@ import {
   VolumeX,
   Sun,
   Moon,
+  Crown,
 } from 'lucide-react';
 import { useScrollStore } from '../../store/useScrollStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
@@ -26,8 +27,6 @@ export const Navbar = () => {
 
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const fidelity3D = useThemeStore((state) => state.fidelity3D);
-  const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
   const soundEnabled = useThemeStore((state) => state.soundEnabled ?? true);
   const toggleSound = useThemeStore((state) => state.toggleSound);
 
@@ -59,41 +58,38 @@ export const Navbar = () => {
 
   const navLinks = [
     { id: 'dashboard', label: 'Dashboard', icon: Boxes },
-    { id: 'pos', label: 'POS Billing', icon: ShoppingBag },
+    { id: 'pos', label: 'Billing POS', icon: ShoppingBag },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'udhaar', label: 'Udhaar CRM', icon: CreditCard },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-white/90 dark:bg-gray-950/85 backdrop-blur-2xl border-b border-amber-500/20 dark:border-white/[0.08] shadow-[0_4px_25px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_25px_rgba(0,0,0,0.5)] transition-all">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+    <header className="sticky top-0 z-40 w-full px-4 sm:px-8 py-3 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] transition-all">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-6">
         
-        {/* Left: Brand Identity with Golden Accent */}
+        {/* Left: Minimalist Brand Identity */}
         <div
           onClick={() => handleNavClick('dashboard')}
-          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
+          className="flex items-center gap-3 cursor-pointer group shrink-0"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-500 p-0.5 shadow-glow-gold group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-white dark:bg-gray-950 rounded-[14px] flex items-center justify-center">
-              <Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400 group-hover:rotate-12 transition-transform" />
-            </div>
+          <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-gray-950 flex items-center justify-center font-bold shadow-sm group-hover:scale-105 transition-transform">
+            <Boxes className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-black text-slate-900 dark:text-white tracking-tight text-sm sm:text-base truncate max-w-[140px] sm:max-w-none">
+              <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight truncate">
                 {shopName}
               </span>
-              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full gold-badge uppercase shadow-sm">
-                ROYAL PRO
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 uppercase">
+                PRO
               </span>
             </div>
-            <p className="hidden sm:block text-[11px] text-slate-500 dark:text-gray-400 font-medium">Smart Retail & Ledger Suite</p>
           </div>
         </div>
 
-        {/* Center: Desktop Nav Screen Tabs */}
-        <nav className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] p-1.5 rounded-2xl">
+        {/* Center: Clean Segmented Navigation Tabs */}
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] p-1 rounded-xl">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = activeSection === link.id || activeSection === `${link.id}-section`;
@@ -101,30 +97,30 @@ export const Navbar = () => {
               <button
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-amber-500/20 dark:bg-emerald-500/20 text-amber-900 dark:text-emerald-300 border border-amber-500/40 dark:border-emerald-500/40 shadow-sm font-black'
-                    : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/[0.05]'
+                    ? 'bg-white dark:bg-white/10 text-slate-950 dark:text-white shadow-sm border border-slate-200/80 dark:border-white/10'
+                    : 'text-slate-600 dark:text-gray-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-amber-700 dark:text-emerald-400 stroke-[2.5]' : 'text-slate-500 dark:text-gray-400'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-gray-500'}`} />
                 <span>{link.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Right: Actions */}
+        {/* Right: Clean Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Quick Search Shortcut */}
+          {/* Quick Search Button */}
           <button
             onClick={() => openModal('quick_search')}
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-700 dark:text-gray-300 font-medium transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-600 dark:text-gray-400 transition-all cursor-pointer"
             title="Global Search (Ctrl+K)"
           >
-            <Search className="w-4 h-4 text-slate-400 dark:text-gray-400" />
-            <span className="hidden md:inline">Search...</span>
-            <kbd className="hidden md:inline text-[10px] bg-slate-200 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-600 dark:text-gray-400 font-mono font-bold">⌘K</kbd>
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden md:inline font-medium">Search...</span>
+            <kbd className="hidden md:inline text-[10px] bg-slate-200/80 dark:bg-white/10 px-1 py-0.5 rounded font-mono">⌘K</kbd>
           </button>
 
           {/* Theme Mode Toggle (Sun/Moon) */}
@@ -133,14 +129,14 @@ export const Navbar = () => {
               toggleTheme();
               if (soundEnabled) soundEffects.playClick();
             }}
-            className="p-2 sm:p-2.5 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            title={isDarkMode ? 'Switch to Royal Alabaster Light Mode' : 'Switch to Cyber Obsidian Dark Mode'}
+            className="p-2 bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle Theme"
           >
             {isDarkMode ? (
-              <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
+              <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-amber-700" />
+              <Moon className="w-4 h-4 text-slate-700" />
             )}
           </button>
 
@@ -150,69 +146,42 @@ export const Navbar = () => {
               toggleSound();
               if (!soundEnabled) soundEffects.playClick();
             }}
-            className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer ${
-              soundEnabled
-                ? 'bg-amber-500/10 dark:bg-emerald-500/10 border-amber-500/30 dark:border-emerald-500/30 text-amber-700 dark:text-emerald-400'
-                : 'bg-slate-100 dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-400 dark:text-gray-500'
-            }`}
-            title={soundEnabled ? 'Sound FX Enabled (Click to Mute)' : 'Sound FX Muted (Click to Unmute)'}
+            className="p-2 bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
+            title={soundEnabled ? 'Mute Sound FX' : 'Enable Sound FX'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-400 dark:text-gray-500" />}
           </button>
 
           {/* Stock Alert Bell */}
           <button
             onClick={() => handleNavClick('inventory')}
-            className="relative p-2 sm:p-2.5 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
+            className="relative p-2 bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
             title={`${totalAlerts} Low / Out-of-Stock Alerts`}
           >
-            <Bell className="w-4 h-4 text-slate-500 dark:text-gray-400" />
+            <Bell className="w-4 h-4 text-slate-600 dark:text-gray-400" />
             {totalAlerts > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-gray-950 animate-pulse">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-gray-950">
                 {totalAlerts}
               </span>
             )}
           </button>
 
-          {/* 3D Fidelity Mode Switcher */}
-          <button
-            onClick={() => {
-              const modes = ['high', 'lite', 'off'];
-              const next = modes[(modes.indexOf(fidelity3D) + 1) % modes.length];
-              setFidelity3D(next);
-            }}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-2 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
-            title={`3D Mode: ${fidelity3D.toUpperCase()}`}
-          >
-            <Sparkles className={`w-3.5 h-3.5 ${fidelity3D === 'high' ? 'text-amber-600 dark:text-cyan-400' : 'text-slate-400 dark:text-gray-500'}`} />
-            <span className="uppercase text-[10px] font-bold text-slate-600 dark:text-gray-400">{fidelity3D}</span>
-          </button>
-
-          {/* Calculator Simulator Quick Launch */}
-          <button
-            onClick={() => openModal('profit_simulator')}
-            className="hidden md:flex p-2 sm:p-2.5 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
-            title="Profit & Margin Simulator"
-          >
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          </button>
-
           {/* Settings Button */}
           <button
             onClick={() => openModal('settings')}
-            className="p-2 sm:p-2.5 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
+            className="p-2 bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-gray-300 transition-all cursor-pointer"
             title="Shop Settings & Backup"
           >
-            <Settings className="w-4 h-4 text-slate-500 dark:text-gray-400" />
+            <Settings className="w-4 h-4 text-slate-600 dark:text-gray-400" />
           </button>
 
-          {/* Primary Quick Sale Button */}
+          {/* Express POS Button */}
           <button
             onClick={() => handleNavClick('pos')}
-            className="btn-shimmer hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl text-xs shadow-glow-gold hover:scale-[1.03] active:scale-[0.97] transition-all cursor-pointer"
+            className="btn-shimmer hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-slate-950 font-bold rounded-xl text-xs shadow-sm transition-all cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-            <span className="font-black">+ Express POS</span>
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>+ POS</span>
           </button>
         </div>
       </div>

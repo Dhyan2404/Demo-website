@@ -3,9 +3,7 @@ import {
   TrendingUp,
   Clock,
   Zap,
-  Package,
   CreditCard,
-  Sparkles,
   ShieldAlert,
 } from 'lucide-react';
 import { useSalesStore } from '../../store/useSalesStore.js';
@@ -15,9 +13,8 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const LiveShopTicker = () => {
-  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
-  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
 
   const sales = useSalesStore((state) => state.sales || []);
   const products = useInventoryStore((state) => state.products || []);
@@ -25,7 +22,7 @@ export const LiveShopTicker = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTime(new Date().toLocaleTimeString());
+      setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -53,25 +50,25 @@ export const LiveShopTicker = () => {
   }, [customers]);
 
   return (
-    <div className="w-full bg-gradient-to-r from-amber-500/10 via-emerald-500/5 to-amber-500/10 dark:from-amber-950/20 dark:via-gray-950 dark:to-amber-950/20 border-y border-amber-500/20 py-1.5 px-4 overflow-hidden text-xs select-none">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-slate-700 dark:text-gray-300">
+    <div className="w-full bg-slate-100/70 dark:bg-white/[0.02] border-b border-slate-200/80 dark:border-white/[0.06] py-1.5 px-4 sm:px-8 text-xs select-none">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-slate-600 dark:text-gray-400">
         
-        {/* Left: Live Pulse Tag */}
-        <div className="flex items-center gap-2 shrink-0 font-bold">
+        {/* Left: Clean Status Indicator */}
+        <div className="flex items-center gap-2 shrink-0">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="text-[10px] uppercase tracking-wider font-extrabold text-amber-700 dark:text-amber-400">
-            Live Shop Feed
+          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400">
+            Realtime Feed
           </span>
         </div>
 
-        {/* Center: Marquee Stream */}
-        <div className="flex items-center gap-6 overflow-x-auto custom-scrollbar whitespace-nowrap text-[11px] font-medium">
-          <span className="flex items-center gap-1.5 font-mono">
-            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <strong className="text-slate-900 dark:text-white font-bold">{time}</strong>
+        {/* Center: Stream Items */}
+        <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto custom-scrollbar whitespace-nowrap text-xs font-medium">
+          <span className="flex items-center gap-1.5 font-mono text-slate-700 dark:text-gray-300">
+            <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
+            <span>{time}</span>
           </span>
 
           <span className="flex items-center gap-1.5">
@@ -80,27 +77,26 @@ export const LiveShopTicker = () => {
           </span>
 
           <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-            <span>Orders Today: <strong className="text-slate-900 dark:text-white font-bold">{todaySalesCount} sales</strong></span>
+            <Zap className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
+            <span>Today: <strong className="text-slate-900 dark:text-white font-semibold">{todaySalesCount} orders</strong></span>
           </span>
 
           {lowStockItem && (
-            <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold animate-pulse">
+            <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-semibold">
               <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Low Stock: {lowStockItem.name} ({lowStockItem.stock} left)</span>
+              <span>Low Stock: {lowStockItem.name} ({lowStockItem.stock})</span>
             </span>
           )}
 
           <span className="flex items-center gap-1.5">
-            <CreditCard className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <span>Market Credit (Udhaar): <strong className="text-amber-700 dark:text-amber-400 font-mono font-bold">{formatCurrency(pendingUdhaarTotal, currency)}</strong></span>
+            <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
+            <span>Pending Credit: <strong className="text-slate-900 dark:text-white font-mono font-semibold">{formatCurrency(pendingUdhaarTotal, currency)}</strong></span>
           </span>
         </div>
 
-        {/* Right: Security Badge */}
-        <div className="hidden md:flex items-center gap-1.5 shrink-0 text-[10px] font-extrabold text-slate-500 dark:text-gray-400 uppercase">
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          <span>Royal Pro v2.5</span>
+        {/* Right: Clean offline status */}
+        <div className="hidden md:flex items-center gap-1.5 shrink-0 text-[11px] text-slate-500 dark:text-gray-400 font-medium">
+          <span>Single-Owner Edition</span>
         </div>
       </div>
     </div>

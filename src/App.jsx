@@ -15,7 +15,7 @@ import { UdhaarSection } from './components/customers/UdhaarSection.jsx';
 import { AnalyticsSection } from './components/analytics/AnalyticsSection.jsx';
 
 // Modals & Common Tools
-import { WelcomeIntroModal } from './components/modals/WelcomeIntroModal.jsx';
+import { WelcomeIntroModal, pageVariants } from './components/modals/WelcomeIntroModal.jsx';
 import { ProfitSimulatorModal } from './components/modals/ProfitSimulatorModal.jsx';
 import { BarcodeGeneratorModal } from './components/modals/BarcodeGeneratorModal.jsx';
 import { ShortcutsModal } from './components/modals/ShortcutsModal.jsx';
@@ -139,10 +139,10 @@ export function App() {
             {currentView === 'dashboard' && (
               <motion.div
                 key="view-dashboard"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 className="space-y-8"
               >
                 <DashboardHero />
@@ -165,10 +165,10 @@ export function App() {
             {currentView === 'pos' && (
               <motion.div
                 key="view-pos"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
                 <POSSection />
               </motion.div>
@@ -178,10 +178,10 @@ export function App() {
             {currentView === 'inventory' && (
               <motion.div
                 key="view-inventory"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
                 <InventorySection />
               </motion.div>
@@ -191,10 +191,10 @@ export function App() {
             {currentView === 'udhaar' && (
               <motion.div
                 key="view-udhaar"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
                 <UdhaarSection />
               </motion.div>
@@ -204,10 +204,10 @@ export function App() {
             {currentView === 'analytics' && (
               <motion.div
                 key="view-analytics"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
                 <AnalyticsSection />
               </motion.div>
@@ -216,7 +216,7 @@ export function App() {
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 border-t border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-6 px-4 sm:px-8 mt-12 text-xs text-slate-500 dark:text-gray-400 transition-colors">
+        <footer className="relative z-10 border-t border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl py-5 px-4 sm:px-8 mt-8 text-xs text-slate-500 dark:text-gray-400 transition-colors">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">

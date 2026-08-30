@@ -1,13 +1,7 @@
 import React, { useMemo } from 'react';
-import {
-  DollarSign,
-  TrendingUp,
-  CreditCard,
-  ShoppingBag,
-  Package,
-  ArrowUpRight,
-  AlertTriangle,
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { listVariants, itemVariants } from '../modals/WelcomeIntroModal.jsx';
+import { DollarSign, TrendingUp, CreditCard, Package } from 'lucide-react';
 import { StatCard } from '../common/StatCard.jsx';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
@@ -51,50 +45,63 @@ export const KPISection = () => {
   }, [products]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <motion.div
+      variants={listVariants}
+      initial="initial"
+      animate="animate"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
+    >
       {/* 1. Total Net Profit */}
-      <StatCard
-        title="Total Net Profit"
-        formattedValue={formatCurrency(totalNetProfit, currency)}
-        subtitle={`${overallMargin.toFixed(1)}% Realized Margin`}
-        icon={TrendingUp}
-        color="green"
-        trend={12.4}
-        trendLabel="growth"
-        onClick={() => setActiveSection('analytics')}
-      />
+      <motion.div variants={itemVariants}>
+        <StatCard
+          title="Total Net Profit"
+          formattedValue={formatCurrency(totalNetProfit, currency)}
+          subtitle={`${overallMargin.toFixed(1)}% Realized Margin`}
+          icon={TrendingUp}
+          color="green"
+          trend={12.4}
+          trendLabel="growth"
+          onClick={() => setActiveSection('analytics')}
+        />
+      </motion.div>
 
       {/* 2. Total Gross Sales */}
-      <StatCard
-        title="Gross Sales (Revenue)"
-        formattedValue={formatCurrency(totalRevenue, currency)}
-        subtitle={`${(sales || []).length} Invoices Billed`}
-        icon={DollarSign}
-        color="cyan"
-        trend={8.2}
-        trendLabel="volume"
-        onClick={() => setActiveSection('pos')}
-      />
+      <motion.div variants={itemVariants}>
+        <StatCard
+          title="Gross Sales (Revenue)"
+          formattedValue={formatCurrency(totalRevenue, currency)}
+          subtitle={`${(sales || []).length} Invoices Billed`}
+          icon={DollarSign}
+          color="cyan"
+          trend={8.2}
+          trendLabel="volume"
+          onClick={() => setActiveSection('pos')}
+        />
+      </motion.div>
 
       {/* 3. Market Udhaar / Credit */}
-      <StatCard
-        title="Market Udhaar (Receivable)"
-        formattedValue={formatCurrency(totalMarketDebt, currency)}
-        subtitle={`${debtorsCount} Customers with Pending Debt`}
-        icon={CreditCard}
-        color={totalMarketDebt > 10000 ? 'amber' : 'rose'}
-        onClick={() => setActiveSection('udhaar')}
-      />
+      <motion.div variants={itemVariants}>
+        <StatCard
+          title="Market Udhaar (Receivable)"
+          formattedValue={formatCurrency(totalMarketDebt, currency)}
+          subtitle={`${debtorsCount} Customers with Pending Debt`}
+          icon={CreditCard}
+          color={totalMarketDebt > 10000 ? 'amber' : 'rose'}
+          onClick={() => setActiveSection('udhaar')}
+        />
+      </motion.div>
 
       {/* 4. Total Stock Asset Value */}
-      <StatCard
-        title="Stock Asset Value (Cost)"
-        formattedValue={formatCurrency(totalInventoryValue, currency)}
-        subtitle={`${totalUnits} Total Units in Store`}
-        icon={Package}
-        color="purple"
-        onClick={() => setActiveSection('inventory')}
-      />
-    </div>
+      <motion.div variants={itemVariants}>
+        <StatCard
+          title="Stock Asset Value (Cost)"
+          formattedValue={formatCurrency(totalInventoryValue, currency)}
+          subtitle={`${totalUnits} Total Units in Store`}
+          icon={Package}
+          color="purple"
+          onClick={() => setActiveSection('inventory')}
+        />
+      </motion.div>
+    </motion.div>
   );
 };
