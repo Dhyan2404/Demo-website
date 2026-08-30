@@ -24,6 +24,7 @@ import { StockAdjustModal } from './components/modals/StockAdjustModal.jsx';
 import { QuickSearchModal } from './components/common/QuickSearchModal.jsx';
 import { WhatsAppReminderModal } from './components/customers/WhatsAppReminderModal.jsx';
 import { NotificationToast } from './components/common/NotificationToast.jsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 
 // Stores
 import { useScrollStore } from './store/useScrollStore.js';
@@ -79,10 +80,12 @@ export function App() {
 
   return (
     <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-gray-950 dark:text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-white dark:selection:text-black font-sans pb-24 lg:pb-0 transition-colors duration-300">
-      {/* 3D WebGL Background Canvas (Lazy Loaded with fallback) */}
-      <Suspense fallback={<div className="canvas-bg-container pointer-events-none" />}>
-        <Canvas3D />
-      </Suspense>
+      {/* 3D WebGL Background Canvas (Lazy Loaded with ErrorBoundary fallback) */}
+      <ErrorBoundary fallback={<div className="canvas-bg-container pointer-events-none" />}>
+        <Suspense fallback={<div className="canvas-bg-container pointer-events-none" />}>
+          <Canvas3D />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* Main UI Container */}
       <div className="relative z-10 flex flex-col min-h-screen">
