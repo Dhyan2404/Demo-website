@@ -17,14 +17,24 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
-          'ui-vendor': ['framer-motion', 'lucide-react', 'canvas-confetti'],
-          'chart-vendor': ['recharts'],
-          'state-vendor': ['zustand', 'axios'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'three-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('canvas-confetti')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('zustand')) {
+              return 'state-vendor';
+            }
+          }
         }
       }
     },
-    chunkSizeWarningLimit: 900,
+    chunkSizeWarningLimit: 1200,
   }
 });
