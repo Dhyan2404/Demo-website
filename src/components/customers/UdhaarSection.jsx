@@ -65,16 +65,11 @@ export const UdhaarSection = () => {
   }, [customers]);
 
   const handleSendWhatsAppReminder = (customer) => {
-    if (!customer.phone) {
+    if (!customer?.phone) {
       showToast('No phone number saved for this customer', 'warning');
       return;
     }
-    const cleanPhone = customer.phone.replace(/[^0-9]/g, '');
-    const amountStr = formatCurrency(customer.currentBalance, currency);
-    const msg = encodeURIComponent(
-      `Hello ${customer.name}, this is a gentle reminder from ${shopName} regarding your pending Udhaar balance of ${amountStr}. Please let us know when you would like to clear this. Thank you!`
-    );
-    window.open(`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}?text=${msg}`, '_blank');
+    openModal('whatsapp_templates', customer);
   };
 
   const handleDelete = (id, name) => {

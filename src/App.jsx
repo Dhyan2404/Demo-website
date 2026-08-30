@@ -23,6 +23,7 @@ import { ReceiptModal } from './components/modals/ReceiptModal.jsx';
 import { SettingsModal } from './components/modals/SettingsModal.jsx';
 import { StockAdjustModal } from './components/modals/StockAdjustModal.jsx';
 import { QuickSearchModal } from './components/common/QuickSearchModal.jsx';
+import { WhatsAppReminderModal } from './components/customers/WhatsAppReminderModal.jsx';
 import { NotificationToast } from './components/common/NotificationToast.jsx';
 
 // Stores
@@ -40,7 +41,6 @@ export function App() {
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
   const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
-  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   // Track scroll position for 3D parallax
   useEffect(() => {
@@ -56,16 +56,12 @@ export function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [setScrollState]);
 
-  const handleWhatsAppReminder = (customer) => {
+  const handleOpenWhatsAppModal = (customer) => {
     if (!customer?.phone) {
       showToast('No phone number saved for this customer', 'warning');
       return;
     }
-    const cleanPhone = customer.phone.replace(/[^0-9]/g, '');
-    const msg = encodeURIComponent(
-      `Hello ${customer.name}, this is a gentle reminder from ${shopName} regarding your pending balance of ${currency}${customer.currentBalance}. Thank you!`
-    );
-    window.open(`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}?text=${msg}`, '_blank');
+    openModal('whatsapp_templates', customer);
   };
 
   const currentView = (activeSection || 'dashboard').replace('-section', '');
@@ -197,13 +193,14 @@ export function App() {
         onClose={closeModal}
         customer={modalData}
         onRecordPayment={(cust) => openModal('record_payment', cust)}
-        onSendReminder={handleWhatsAppReminder}
+        onSendReminder={handleOpenWhatsAppModal}
       />
       <RecordPaymentModal isOpen={activeModal === 'record_payment'} onClose={closeModal} customer={modalData} />
       <ReceiptModal isOpen={activeModal === 'receipt'} onClose={closeModal} sale={modalData} />
       <SettingsModal isOpen={activeModal === 'settings'} onClose={closeModal} />
       <StockAdjustModal isOpen={activeModal === 'stock_adjust'} onClose={closeModal} product={modalData} />
       <QuickSearchModal isOpen={activeModal === 'quick_search'} onClose={closeModal} />
+      <WhatsAppReminderModal isOpen={activeModal === 'whatsapp_templates'} onClose={closeModal} customer={modalData} />
 
       {/* Toast Notifications */}
       <NotificationToast />

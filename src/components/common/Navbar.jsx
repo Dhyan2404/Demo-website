@@ -10,10 +10,13 @@ import {
   CreditCard,
   BarChart3,
   Package,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { useScrollStore } from '../../store/useScrollStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
+import { soundEffects } from '../../utils/soundEffects.js';
 
 export const Navbar = () => {
   const activeSection = useScrollStore((state) => state.activeSection);
@@ -21,6 +24,9 @@ export const Navbar = () => {
 
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
+  const soundEnabled = useThemeStore((state) => state.soundEnabled ?? true);
+  const toggleSound = useThemeStore((state) => state.toggleSound);
+
   const openModal = useThemeStore((state) => state.openModal);
   const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
 
@@ -42,6 +48,11 @@ export const Navbar = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [openModal]);
 
+  const handleNavClick = (sectionId) => {
+    if (soundEnabled) soundEffects.playClick();
+    setActiveSection(sectionId);
+  };
+
   const navLinks = [
     { id: 'dashboard', label: 'Dashboard', icon: Boxes },
     { id: 'pos', label: 'POS Billing', icon: ShoppingBag },
@@ -56,7 +67,7 @@ export const Navbar = () => {
         
         {/* Left: Brand Identity */}
         <div
-          onClick={() => setActiveSection('dashboard')}
+          onClick={() => handleNavClick('dashboard')}
           className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
         >
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500 p-0.5 shadow-glow-green group-hover:scale-105 transition-transform">
@@ -85,7 +96,7 @@ export const Navbar = () => {
             return (
               <button
                 key={link.id}
-                onClick={() => setActiveSection(link.id)}
+                onClick={() => handleNavClick(link.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                   isActive
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)] font-bold'
@@ -100,7 +111,7 @@ export const Navbar = () => {
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Quick Search Shortcut */}
           <button
             onClick={() => openModal('quick_search')}
@@ -112,9 +123,25 @@ export const Navbar = () => {
             <kbd className="hidden md:inline text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400 font-mono">⌘K</kbd>
           </button>
 
+          {/* Sound FX Toggle */}
+          <button
+            onClick={() => {
+              toggleSound();
+              if (!soundEnabled) soundEffects.playClick();
+            }}
+            className={`p-2 sm:p-2.5 rounded-xl border transition-all ${
+              soundEnabled
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                : 'bg-white/[0.04] border-white/10 text-gray-500 hover:text-gray-300'
+            }`}
+            title={soundEnabled ? 'Sound FX Enabled (Click to Mute)' : 'Sound FX Muted (Click to Unmute)'}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
           {/* Stock Alert Bell */}
           <button
-            onClick={() => setActiveSection('inventory')}
+            onClick={() => handleNavClick('inventory')}
             className="relative p-2 sm:p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
             title={`${totalAlerts} Low / Out-of-Stock Alerts`}
           >
@@ -149,9 +176,9 @@ export const Navbar = () => {
             <Settings className="w-4 h-4 text-gray-400" />
           </button>
 
-          {/* Primary Quick Sale Button (Switches to POS screen) */}
+          {/* Primary Quick Sale Button */}
           <button
-            onClick={() => setActiveSection('pos')}
+            onClick={() => handleNavClick('pos')}
             className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold rounded-xl text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <PlusCircle className="w-4 h-4 text-gray-950" />

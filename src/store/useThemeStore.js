@@ -6,9 +6,10 @@ export const useThemeStore = create(
   persist(
     (set, get) => ({
       isDarkMode: true,
+      soundEnabled: true,
       fidelity3D: 'high', // 'high' | 'lite' | 'off'
       settings: initialSettings,
-      activeModal: null, // null | 'pos' | 'product_form' | 'customer_form' | 'record_payment' | 'receipt' | 'settings' | 'quick_search' | 'stock_adjust'
+      activeModal: null, // null | 'pos' | 'product_form' | 'customer_form' | 'record_payment' | 'receipt' | 'settings' | 'quick_search' | 'stock_adjust' | 'whatsapp_templates'
       modalData: null,
       toast: null, // { type: 'success'|'error'|'info'|'warning', message: string }
 
@@ -20,6 +21,10 @@ export const useThemeStore = create(
         } else {
           document.documentElement.classList.remove('dark');
         }
+      },
+
+      toggleSound: () => {
+        set({ soundEnabled: !get().soundEnabled });
       },
 
       setFidelity3D: (mode) => set({ fidelity3D: mode }),
