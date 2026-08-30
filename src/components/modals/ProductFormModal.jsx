@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Package, Plus, Save, TrendingUp, AlertCircle } from 'lucide-react';
 import { Modal } from '../common/Modal.jsx';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
