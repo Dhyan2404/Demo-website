@@ -153,8 +153,8 @@ export const InventorySection = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1">
           <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider">Catalog Size</span>
-          <p className="text-lg sm:text-xl font-black text-white">{products.length} Products</p>
-          <p className="text-[10px] text-gray-500">{categories.length - 1} Categories Active</p>
+          <p className="text-lg sm:text-xl font-black text-white">{(products || []).length} Products</p>
+          <p className="text-[10px] text-gray-500">{Math.max(0, (categories || []).length - 1)} Categories Active</p>
         </div>
 
         <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1">
@@ -194,7 +194,7 @@ export const InventorySection = () => {
           {/* Stock Level Quick Filters */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
             {[
-              { id: 'all', label: `All (${products.length})` },
+              { id: 'all', label: `All (${(products || []).length})` },
               { id: 'in_stock', label: 'In Stock' },
               { id: 'low', label: `Low (${lowStockCount})`, alert: lowStockCount > 0 },
               { id: 'out', label: `Out (${outOfStockCount})`, danger: outOfStockCount > 0 },

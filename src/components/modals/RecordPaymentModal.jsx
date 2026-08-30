@@ -34,7 +34,8 @@ export const RecordPaymentModal = ({ isOpen, onClose, customer = null }) => {
       return;
     }
 
-    const success = recordPayment(customer.id, payVal, paymentMethod, note);
+    const custId = customer.id || customer._id;
+    const success = recordPayment(custId, payVal, paymentMethod, note);
     if (success) {
       showToast(
         `Recorded ${formatCurrency(payVal, currency)} payment from ${customer.name}!`,

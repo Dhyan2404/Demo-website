@@ -124,7 +124,7 @@ export const TopPerformersGrid = () => {
         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">All Products Ranked by Net Profit Contribution</h4>
         
         <div className="space-y-2">
-          {allPerformers.slice(0, 5).map((item, idx) => {
+          {(allPerformers || []).slice(0, 5).map((item, idx) => {
             const margin = item.totalRevenue > 0 ? ((item.totalProfit / item.totalRevenue) * 100).toFixed(0) : 0;
             return (
               <div

@@ -20,7 +20,7 @@ export const CustomerTypeaheadPicker = ({ isUdhaar = false }) => {
   const customers = useCustomerStore((state) => state.customers);
   const addCustomer = useCustomerStore((state) => state.addCustomer);
 
-  const cart = useSalesStore((state) => state.cart);
+  const selectedCustomerStore = useSalesStore((state) => state.selectedCustomer);
   const setCartCustomer = useSalesStore((state) => state.setCartCustomer);
 
   const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
@@ -47,9 +47,10 @@ export const CustomerTypeaheadPicker = ({ isUdhaar = false }) => {
 
   // Filter existing customers by name OR phone number
   const filteredCustomers = useMemo(() => {
-    if (!query.trim()) return customers.slice(0, 5); // show top 5 recent when focused
+    const list = customers || [];
+    if (!query.trim()) return list.slice(0, 5); // show top 5 recent when focused
     const q = query.trim().toLowerCase();
-    return (customers || []).filter((c) => {
+    return list.filter((c) => {
       const matchName = (c.name || '').toLowerCase().includes(q);
       const matchPhone = (c.phone || '').includes(q);
       return matchName || matchPhone;
@@ -57,11 +58,12 @@ export const CustomerTypeaheadPicker = ({ isUdhaar = false }) => {
   }, [customers, query]);
 
   const selectedCustomer = useMemo(() => {
-    if (!cart.customerId) return null;
-    return (customers || []).find((c) => c.id === cart.customerId || c._id === cart.customerId);
-  }, [customers, cart.customerId]);
+    if (!selectedCustomerStore) return null;
+    const storeId = selectedCustomerStore.id || selectedCustomerStore._id;
+    return (customers || []).find((c) => (c.id && c.id === storeId) || (c._id && c._id === storeId)) || selectedCustomerStore;
+  }, [customers, selectedCustomerStore]);
 
-  const isGuest = !cart.customerId && (!cart.customerPhone || cart.customerName === 'Walk-in Customer');
+  const isGuest = !selectedCustomerStore;
 
   const handleSelectCustomer = (cust) => {
     setCartCustomer(cust.id || cust._id, cust.name, cust.phone);

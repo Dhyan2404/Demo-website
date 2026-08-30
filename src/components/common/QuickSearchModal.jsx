@@ -19,15 +19,15 @@ export const QuickSearchModal = ({ isOpen, onClose }) => {
   const q = query.trim().toLowerCase();
 
   const matchedProducts = q
-    ? products.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 4)
+    ? (products || []).filter(p => p.name?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q)).slice(0, 4)
     : [];
 
   const matchedCustomers = q
-    ? customers.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q)).slice(0, 4)
+    ? (customers || []).filter(c => c.name?.toLowerCase().includes(q) || c.phone?.includes(q)).slice(0, 4)
     : [];
 
   const matchedSales = q
-    ? sales.filter(s => s.invoiceNo.toLowerCase().includes(q) || s.customerName.toLowerCase().includes(q)).slice(0, 4)
+    ? (sales || []).filter(s => (s.invoiceNo || s.invoiceNumber || '').toLowerCase().includes(q) || (s.customerName || '').toLowerCase().includes(q)).slice(0, 4)
     : [];
 
   return (

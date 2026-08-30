@@ -59,8 +59,8 @@ export const exportSalesToCSV = (sales = []) => {
   const rows = sales.map(s => {
     const itemsSummary = (s.items || []).map(i => `${i.name} (x${i.quantity})`).join('; ');
     return [
-      sanitizeCSVCell(s.invoiceNumber || s.invoiceNo),
-      sanitizeCSVCell(new Date(s.createdAt).toLocaleString()),
+      sanitizeCSVCell(s.invoiceNumber || s.invoiceNo || 'INV'),
+      sanitizeCSVCell(new Date(s.createdAt || s.date || Date.now()).toLocaleString()),
       sanitizeCSVCell(s.customerName || 'Walk-in'),
       sanitizeCSVCell(itemsSummary),
       Number(s.subtotal) || Number(s.totalAmount) || 0,

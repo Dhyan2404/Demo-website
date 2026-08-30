@@ -166,10 +166,10 @@ export const InventoryTable = () => {
           {/* Stock Status Pills */}
           <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto pb-1 sm:pb-0">
             {[
-              { id: 'all', label: 'All Items', count: products.length },
-              { id: 'in_stock', label: 'In Stock', count: products.filter(p => p.stock > (p.minThreshold || 5)).length },
-              { id: 'low', label: 'Low Stock', count: products.filter(p => p.stock > 0 && p.stock <= (p.minThreshold || 5)).length },
-              { id: 'out', label: 'Out of Stock', count: products.filter(p => p.stock <= 0).length },
+              { id: 'all', label: 'All Items', count: (products || []).length },
+              { id: 'in_stock', label: 'In Stock', count: (products || []).filter(p => p.stock > (p.minThreshold || 5)).length },
+              { id: 'low', label: 'Low Stock', count: (products || []).filter(p => p.stock > 0 && p.stock <= (p.minThreshold || 5)).length },
+              { id: 'out', label: 'Out of Stock', count: (products || []).filter(p => p.stock <= 0).length },
             ].map((tab) => (
               <button
                 key={tab.id}

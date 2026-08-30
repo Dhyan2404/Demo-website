@@ -102,10 +102,10 @@ export const CustomerDetailModal = ({ isOpen, onClose, customer, onRecordPayment
 
         {/* Transaction History Ledger */}
         <div className="space-y-2.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Ledger Statement ({transactions.length} transactions)</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Ledger Statement ({(transactions || []).length} transactions)</h4>
           
           <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {transactions.map((tx, idx) => {
+            {(transactions || []).map((tx, idx) => {
               const isCredit = tx.type === 'credit';
               return (
                 <div

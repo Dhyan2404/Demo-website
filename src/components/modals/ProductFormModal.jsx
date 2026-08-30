@@ -75,7 +75,7 @@ export const ProductFormModal = ({ isOpen, onClose, product = null }) => {
     }
 
     if (isEditing) {
-      updateProduct(product.id, formData);
+      updateProduct(product.id || product._id, formData);
       showToast(`Updated "${formData.name}"`, 'success');
     } else {
       addProduct(formData);

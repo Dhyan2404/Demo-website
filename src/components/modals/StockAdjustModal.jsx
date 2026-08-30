@@ -40,12 +40,13 @@ export const StockAdjustModal = ({ isOpen, onClose, product = null }) => {
       return;
     }
 
+    const targetId = product.id || product._id;
     if (operation === 'set') {
-      updateProduct(product.id, { stock: calculatedNewStock });
+      updateProduct(targetId, { stock: calculatedNewStock });
     } else if (operation === 'add') {
-      adjustStock(product.id, numAmount);
+      adjustStock(targetId, numAmount);
     } else if (operation === 'subtract') {
-      adjustStock(product.id, -numAmount);
+      adjustStock(targetId, -numAmount);
     }
 
     showToast(`Updated stock for ${product.name} to ${calculatedNewStock} ${product.unit}`, 'success');

@@ -94,10 +94,17 @@ export const useSalesStore = create(
       },
 
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
+      setCartCustomer: (customerId, customerName = 'Walk-in Customer', customerPhone = '') => {
+        set({
+          selectedCustomer: customerId ? { id: customerId, _id: customerId, name: customerName, phone: customerPhone } : null,
+        });
+      },
       setPaymentMethod: (method) => set({ paymentMethod: method }),
+      setCartPaymentMethod: (method) => set({ paymentMethod: method }),
       setPaidAmount: (amount) => set({ paidAmount: Math.max(0, Number(amount) || 0) }),
       setDiscountAmount: (discount) => set({ discountAmount: Math.max(0, Number(discount) || 0) }),
       setActiveTaxRate: (rate) => set({ activeTaxRate: Number(rate) || 0 }),
+      updateCartQty: (productId, quantity) => get().updateCartQuantity(productId, quantity),
 
       // Financial Calculation Helper
       getCartTotals: () => {
@@ -242,8 +249,16 @@ export const useSalesStore = create(
     {
       name: 'smartshop-sales-store',
       partialize: (state) => ({
-        sales: state.sales,
+        sales: Array.isArray(state.sales) ? state.sales : [],
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && (!Array.isArray(state.sales) || state.sales.length === 0)) {
+          state.sales = initialSales || [];
+        }
+        if (state && !Array.isArray(state.cart)) {
+          state.cart = [];
+        }
+      },
     }
   )
 );

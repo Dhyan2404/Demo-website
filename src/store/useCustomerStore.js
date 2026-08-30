@@ -182,6 +182,11 @@ export const useCustomerStore = create(
     }),
     {
       name: 'smartshop-customers-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state && (!Array.isArray(state.customers) || state.customers.length === 0)) {
+          state.customers = initialCustomers || [];
+        }
+      },
     }
   )
 );

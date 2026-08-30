@@ -137,9 +137,9 @@ export const CustomerLedgerTable = () => {
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto">
           {[
-            { id: 'all', label: 'All Customers', count: customers.length },
-            { id: 'has_debt', label: 'Pending Debt', count: customers.filter(c => (c.currentBalance || 0) > 0).length },
-            { id: 'settled', label: 'Settled / Clear', count: customers.filter(c => (c.currentBalance || 0) === 0).length },
+            { id: 'all', label: 'All Customers', count: (customers || []).length },
+            { id: 'has_debt', label: 'Pending Debt', count: (customers || []).filter(c => (c.currentBalance || 0) > 0).length },
+            { id: 'settled', label: 'Settled / Clear', count: (customers || []).filter(c => (c.currentBalance || 0) === 0).length },
           ].map((tab) => (
             <button
               key={tab.id}

@@ -33,12 +33,15 @@ export const MarginBreakdownChart = () => {
 
   const { barData, pieData } = useMemo(() => {
     const { allPerformers } = computeTopProducts(sales, products);
-    const bars = (allPerformers || []).slice(0, 5).map((p) => ({
-      name: p.name.length > 14 ? `${p.name.slice(0, 14)}...` : p.name,
-      fullName: p.name,
-      Revenue: p.totalRevenue,
-      Profit: p.totalProfit,
-    }));
+    const bars = (allPerformers || []).slice(0, 5).map((p) => {
+      const pName = p.name || 'Item';
+      return {
+        name: pName.length > 14 ? `${pName.slice(0, 14)}...` : pName,
+        fullName: pName,
+        Revenue: Number(p.totalRevenue) || 0,
+        Profit: Number(p.totalProfit) || 0,
+      };
+    });
 
     // Payment method breakdown
     const paymentMap = { cash: 0, upi: 0, card: 0, udhaar: 0 };

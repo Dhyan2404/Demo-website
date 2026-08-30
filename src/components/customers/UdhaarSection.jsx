@@ -137,8 +137,8 @@ export const UdhaarSection = () => {
 
         <div className="glass-panel p-4 rounded-2xl border border-white/10 space-y-1">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Registered Accounts</span>
-          <p className="text-2xl font-black text-cyan-400 font-mono">{customers.length}</p>
-          <p className="text-xs text-gray-500">{customers.length - debtorsCount} accounts all clear</p>
+          <p className="text-2xl font-black text-cyan-400 font-mono">{(customers || []).length}</p>
+          <p className="text-xs text-gray-500">{Math.max(0, (customers || []).length - debtorsCount)} accounts all clear</p>
         </div>
       </div>
 

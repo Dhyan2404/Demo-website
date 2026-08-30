@@ -179,15 +179,20 @@ export const useInventoryStore = create(
       },
 
       getInventoryValuation: () => {
-        const products = get().products;
-        const totalCostValue = products.reduce((acc, p) => acc + (p.costPrice * p.stock), 0);
-        const totalRetailValue = products.reduce((acc, p) => acc + (p.sellingPrice * p.stock), 0);
+        const products = get().products || [];
+        const totalCostValue = products.reduce((acc, p) => acc + ((Number(p.costPrice) || 0) * (Number(p.stock) || 0)), 0);
+        const totalRetailValue = products.reduce((acc, p) => acc + ((Number(p.sellingPrice) || 0) * (Number(p.stock) || 0)), 0);
         const projectedProfit = totalRetailValue - totalCostValue;
         return { totalCostValue, totalRetailValue, projectedProfit };
       }
     }),
     {
       name: 'smartshop-inventory-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state && (!Array.isArray(state.products) || state.products.length === 0)) {
+          state.products = initialProducts || [];
+        }
+      },
     }
   )
 );
