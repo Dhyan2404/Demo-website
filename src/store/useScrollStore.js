@@ -1,13 +1,18 @@
 import { create } from 'zustand';
 
 export const useScrollStore = create((set, get) => ({
-  activeSection: 'dashboard',
+  activeSection: 'dashboard', // 'dashboard' | 'pos' | 'inventory' | 'udhaar' | 'analytics'
   scrollProgress: 0,
   scrollY: 0,
   
-  // 3D scene camera targets based on active section
+  // 3D scene camera targets based on active section view
   sectionCameraTargets: {
     'dashboard': { position: [0, 1.2, 5.5], rotation: [0, 0, 0], fov: 45 },
+    'pos': { position: [1.8, 0.4, 4.2], rotation: [0.1, -0.25, 0], fov: 42 },
+    'inventory': { position: [-1.8, -0.2, 4.5], rotation: [-0.1, 0.25, 0], fov: 45 },
+    'udhaar': { position: [0, -0.8, 4.0], rotation: [0.2, 0, 0], fov: 40 },
+    'analytics': { position: [0, 0.5, 5.2], rotation: [-0.15, 0, 0], fov: 46 },
+    // Backwards compatibility keys
     'pos-section': { position: [1.8, 0.4, 4.2], rotation: [0.1, -0.25, 0], fov: 42 },
     'inventory-section': { position: [-1.8, -0.2, 4.5], rotation: [-0.1, 0.25, 0], fov: 45 },
     'udhaar-section': { position: [0, -0.8, 4.0], rotation: [0.2, 0, 0], fov: 40 },
@@ -15,8 +20,11 @@ export const useScrollStore = create((set, get) => ({
   },
 
   setActiveSection: (sectionId) => {
-    if (get().activeSection !== sectionId) {
-      set({ activeSection: sectionId });
+    // Normalize section ID
+    const normalized = sectionId.replace('-section', '');
+    if (get().activeSection !== normalized) {
+      set({ activeSection: normalized });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   },
 
@@ -29,9 +37,8 @@ export const useScrollStore = create((set, get) => ({
   },
 
   scrollToSection: (sectionId) => {
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+    const normalized = sectionId.replace('-section', '');
+    set({ activeSection: normalized });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }));

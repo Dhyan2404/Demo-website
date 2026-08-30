@@ -11,7 +11,7 @@ export const RecordPaymentModal = ({ isOpen, onClose, customer = null }) => {
   const [note, setNote] = useState('Udhaar payment settled');
 
   const recordPayment = useCustomerStore((state) => state.recordPayment);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
   useEffect(() => {

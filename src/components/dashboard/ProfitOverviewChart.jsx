@@ -48,7 +48,7 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
 export const ProfitOverviewChart = () => {
   const sales = useSalesStore((state) => state.sales);
   const periodFilter = useSalesStore((state) => state.periodFilter);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   const chartData = generateTimelineChartData(sales, periodFilter);
 

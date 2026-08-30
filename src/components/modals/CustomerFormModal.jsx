@@ -14,7 +14,7 @@ export const CustomerFormModal = ({ isOpen, onClose }) => {
   });
 
   const addCustomer = useCustomerStore((state) => state.addCustomer);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
   const handleSubmit = async (e) => {

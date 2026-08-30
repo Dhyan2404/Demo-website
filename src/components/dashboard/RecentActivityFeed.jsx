@@ -7,7 +7,7 @@ import { formatCurrency, formatDateTime } from '../../utils/formatters.js';
 
 export const RecentActivityFeed = () => {
   const sales = useSalesStore((state) => state.sales);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const openModal = useThemeStore((state) => state.openModal);
 
   const recentSales = sales.slice(0, 6);

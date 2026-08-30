@@ -7,7 +7,7 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const RecordPaymentModal = ({ isOpen, onClose, customer }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
   const recordPayment = useCustomerStore((state) => state.recordPayment);
 

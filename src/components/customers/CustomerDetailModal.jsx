@@ -5,7 +5,7 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency, formatDateTime } from '../../utils/formatters.js';
 
 export const CustomerDetailModal = ({ isOpen, onClose, customer, onRecordPayment, onSendReminder }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   if (!customer) return null;
 

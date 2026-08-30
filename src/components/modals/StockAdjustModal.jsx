@@ -11,7 +11,7 @@ export const StockAdjustModal = ({ isOpen, onClose, product = null }) => {
 
   const adjustStock = useInventoryStore((state) => state.adjustStock);
   const updateProduct = useInventoryStore((state) => state.updateProduct);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
   useEffect(() => {

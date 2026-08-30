@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from '../../utils/formatters.js';
 
 export const QuickSearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const openModal = useThemeStore((state) => state.openModal);
 
   const products = useInventoryStore((state) => state.products);

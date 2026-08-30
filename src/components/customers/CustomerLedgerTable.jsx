@@ -20,7 +20,7 @@ import { exportCustomersToCSV } from '../../services/exportService.js';
 import { Modal } from '../common/Modal.jsx';
 
 export const CustomerLedgerTable = () => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
 

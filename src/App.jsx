@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas3D } from './components/3d/Canvas3D.jsx';
 import { Navbar } from './components/common/Navbar.jsx';
 import { MobileBottomNav } from './components/common/MobileBottomNav.jsx';
@@ -30,7 +31,7 @@ import { useThemeStore } from './store/useThemeStore.js';
 import { Boxes, Sparkles, Heart } from 'lucide-react';
 
 export function App() {
-  const setActiveSection = useScrollStore((state) => state.setActiveSection);
+  const activeSection = useScrollStore((state) => state.activeSection || 'dashboard');
   const setScrollState = useScrollStore((state) => state.setScrollState);
 
   const activeModal = useThemeStore((state) => state.activeModal);
@@ -41,34 +42,19 @@ export function App() {
   const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
   const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
-  // Scroll spy & 3D camera tracker
+  // Track scroll position for 3D parallax
   useEffect(() => {
     const handleScroll = () => {
       try {
         const scrollY = window.scrollY || 0;
         const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
         setScrollState(scrollY, maxScroll);
-
-        const sections = ['dashboard', 'pos-section', 'inventory-section', 'udhaar-section', 'analytics-section'];
-        const scrollPosition = scrollY + 250;
-
-        for (const sectionId of sections) {
-          const el = document.getElementById(sectionId);
-          if (el) {
-            const top = el.offsetTop;
-            const height = el.offsetHeight;
-            if (scrollPosition >= top && scrollPosition < top + height) {
-              setActiveSection(sectionId);
-              break;
-            }
-          }
-        }
       } catch (err) {}
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [setActiveSection, setScrollState]);
+  }, [setScrollState]);
 
   const handleWhatsAppReminder = (customer) => {
     if (!customer?.phone) {
@@ -82,46 +68,99 @@ export function App() {
     window.open(`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}?text=${msg}`, '_blank');
   };
 
+  const currentView = (activeSection || 'dashboard').replace('-section', '');
+
   return (
-    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans pb-20 lg:pb-0">
+    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans pb-24 lg:pb-0">
       {/* 3D WebGL Background Canvas with Ambient Fallback */}
       <Canvas3D />
 
-      {/* Main UI Container on Top of 3D Canvas */}
+      {/* Main UI Container */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Sticky Glass Navbar */}
         <Navbar />
 
-        {/* Main Content Sections */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-8 py-5 sm:py-8 space-y-10 sm:space-y-12">
-          {/* Section 1: Main Dashboard */}
-          <section id="dashboard" className="scroll-mt-24 space-y-6">
-            <DashboardHero />
-            <KPISection />
+        {/* Modular Dedicated View Screen */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-8 py-5 sm:py-8">
+          <AnimatePresence mode="wait">
+            {/* View 1: Main Dashboard */}
+            {currentView === 'dashboard' && (
+              <motion.div
+                key="view-dashboard"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <DashboardHero />
+                <KPISection />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7">
-                <ProfitOverviewChart />
-              </div>
-              <div className="lg:col-span-5">
-                <RecentActivityFeed />
-              </div>
-            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-7">
+                    <ProfitOverviewChart />
+                  </div>
+                  <div className="lg:col-span-5">
+                    <RecentActivityFeed />
+                  </div>
+                </div>
 
-            <LiveStockAlerts />
-          </section>
+                <LiveStockAlerts />
+              </motion.div>
+            )}
 
-          {/* Section 2: Quick Billing / POS */}
-          <POSSection />
+            {/* View 2: Dedicated Express POS Terminal */}
+            {currentView === 'pos' && (
+              <motion.div
+                key="view-pos"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <POSSection />
+              </motion.div>
+            )}
 
-          {/* Section 3: Inventory Management */}
-          <InventorySection />
+            {/* View 3: Dedicated Inventory & Stock Hub */}
+            {currentView === 'inventory' && (
+              <motion.div
+                key="view-inventory"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <InventorySection />
+              </motion.div>
+            )}
 
-          {/* Section 4: Customer Udhaar Ledger */}
-          <UdhaarSection />
+            {/* View 4: Dedicated Customer Udhaar CRM */}
+            {currentView === 'udhaar' && (
+              <motion.div
+                key="view-udhaar"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <UdhaarSection />
+              </motion.div>
+            )}
 
-          {/* Section 5: Profit Analytics & Backup */}
-          <AnalyticsSection />
+            {/* View 5: Dedicated Profit Intelligence & Reports */}
+            {currentView === 'analytics' && (
+              <motion.div
+                key="view-analytics"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AnalyticsSection />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         {/* Footer */}

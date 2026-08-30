@@ -17,7 +17,7 @@ import { useInventoryStore } from '../../store/useInventoryStore.js';
 
 export const Navbar = () => {
   const activeSection = useScrollStore((state) => state.activeSection);
-  const scrollToSection = useScrollStore((state) => state.scrollToSection);
+  const setActiveSection = useScrollStore((state) => state.setActiveSection);
 
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
@@ -44,19 +44,19 @@ export const Navbar = () => {
 
   const navLinks = [
     { id: 'dashboard', label: 'Dashboard', icon: Boxes },
-    { id: 'pos-section', label: 'Quick POS', icon: ShoppingBag },
-    { id: 'inventory-section', label: 'Inventory', icon: Package },
-    { id: 'udhaar-section', label: 'Udhaar Ledger', icon: CreditCard },
-    { id: 'analytics-section', label: 'Profit Analytics', icon: BarChart3 },
+    { id: 'pos', label: 'POS Billing', icon: ShoppingBag },
+    { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'udhaar', label: 'Udhaar CRM', icon: CreditCard },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-gray-950/80 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
+    <header className="sticky top-0 z-40 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-gray-950/85 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Left: Brand Identity */}
         <div
-          onClick={() => scrollToSection('dashboard')}
+          onClick={() => setActiveSection('dashboard')}
           className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
         >
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500 p-0.5 shadow-glow-green group-hover:scale-105 transition-transform">
@@ -77,22 +77,22 @@ export const Navbar = () => {
           </div>
         </div>
 
-        {/* Center: Desktop Nav Links */}
+        {/* Center: Desktop Nav Screen Tabs */}
         <nav className="hidden lg:flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] p-1.5 rounded-2xl">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = activeSection === link.id;
+            const isActive = activeSection === link.id || activeSection === `${link.id}-section`;
             return (
               <button
                 key={link.id}
-                onClick={() => scrollToSection(link.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                onClick={() => setActiveSection(link.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                   isActive
-                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)] font-bold'
                     : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-gray-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400 stroke-[2.5]' : 'text-gray-400'}`} />
                 <span>{link.label}</span>
               </button>
             );
@@ -114,7 +114,7 @@ export const Navbar = () => {
 
           {/* Stock Alert Bell */}
           <button
-            onClick={() => scrollToSection('inventory-section')}
+            onClick={() => setActiveSection('inventory')}
             className="relative p-2 sm:p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
             title={`${totalAlerts} Low / Out-of-Stock Alerts`}
           >
@@ -149,13 +149,13 @@ export const Navbar = () => {
             <Settings className="w-4 h-4 text-gray-400" />
           </button>
 
-          {/* Primary Quick Sale Button (Desktop) */}
+          {/* Primary Quick Sale Button (Switches to POS screen) */}
           <button
-            onClick={() => openModal('pos')}
+            onClick={() => setActiveSection('pos')}
             className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold rounded-xl text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <PlusCircle className="w-4 h-4 text-gray-950" />
-            <span className="font-extrabold">+ New Sale</span>
+            <span className="font-extrabold">+ Express POS</span>
           </button>
         </div>
       </div>

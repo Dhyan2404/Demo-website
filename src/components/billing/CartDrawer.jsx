@@ -7,7 +7,7 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const CartDrawer = ({ onCheckoutSuccess }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
   const cart = useSalesStore((state) => state.cart);

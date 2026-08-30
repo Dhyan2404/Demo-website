@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Modal } from '../common/Modal.jsx';
+import { CustomerTypeaheadPicker } from './CustomerTypeaheadPicker.jsx';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
@@ -25,9 +26,6 @@ import { formatCurrency } from '../../utils/formatters.js';
 export const QuickPOSModal = ({ isOpen, onClose }) => {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('All');
-  const [isNewCustMode, setIsNewCustMode] = useState(false);
-  const [newCustName, setNewCustName] = useState('');
-  const [newCustPhone, setNewCustPhone] = useState('');
   const [mobileTab, setMobileTab] = useState('catalog'); // 'catalog' | 'cart'
 
   const products = useInventoryStore((state) => state.products);
@@ -38,10 +36,8 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
   const removeFromCart = useSalesStore((state) => state.removeFromCart);
   const clearCart = useSalesStore((state) => state.clearCart);
   const setCartPaymentMethod = useSalesStore((state) => state.setCartPaymentMethod);
-  const setCartCustomer = useSalesStore((state) => state.setCartCustomer);
   const completeCheckout = useSalesStore((state) => state.completeCheckout);
 
-  const customers = useCustomerStore((state) => state.customers);
   const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
   const openModal = useThemeStore((state) => state.openModal);
@@ -82,21 +78,14 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
     }
 
     if (cart.paymentMethod === 'udhaar') {
-      if (isNewCustMode) {
-        if (!newCustName.trim() || !newCustPhone.trim()) {
-          showToast('Please enter customer name and phone for Udhaar sales.', 'warning');
-          return;
-        }
-        setCartCustomer(null, newCustName.trim(), newCustPhone.trim());
-      } else if (!cart.customerId) {
-        showToast('Please select a customer for Udhaar (Credit) record.', 'warning');
+      if (!cart.customerId && !cart.customerPhone) {
+        showToast('Please search & select or add a customer for Udhaar credit.', 'warning');
         return;
       }
     }
 
     const completedSale = await completeCheckout();
     if (completedSale) {
-      // Trigger celebration confetti
       try {
         confetti({
           particleCount: 80,
@@ -108,7 +97,6 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
 
       showToast(`Sale #${completedSale.invoiceNo} recorded successfully!`, 'success');
       onClose();
-      // Automatically open receipt view
       openModal('receipt', completedSale);
     }
   };
@@ -256,12 +244,17 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* RIGHT: Cart & Checkout Ledger (5 Cols) */}
-        <div className={`lg:col-span-5 bg-gray-950/70 border border-white/10 p-4 sm:p-5 rounded-2xl flex flex-col justify-between space-y-4 ${mobileTab === 'catalog' ? 'hidden lg:flex' : 'flex'}`}>
+        <div className={`lg:col-span-5 bg-gray-950/70 border border-white/10 p-4 sm:p-5 rounded-2xl flex flex-col justify-between space-y-3 ${mobileTab === 'catalog' ? 'hidden lg:flex' : 'flex'}`}>
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+            
+            {/* Universal Customer Typeahead & Guest Selector */}
+            <CustomerTypeaheadPicker isUdhaar={cart.paymentMethod === 'udhaar'} />
+
+            {/* Cart Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-4 h-4 text-emerald-400" />
-                <h4 className="text-sm font-bold text-white">Current Cart</h4>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Cart Items</h4>
                 <Badge variant="success" size="sm">
                   {cartTotals.totalItems} item{cartTotals.totalItems !== 1 ? 's' : ''}
                 </Badge>
@@ -278,7 +271,7 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* Cart Items List */}
-            <div className="space-y-2 max-h-[190px] sm:max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-2 max-h-[160px] sm:max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
               {cart.items.map((item) => {
                 const lineTotal = item.sellingPrice * item.quantity;
                 const lineProfit = (item.sellingPrice - item.costPrice) * item.quantity;
@@ -295,7 +288,7 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
                         <strong className="text-white font-bold">{formatCurrency(lineTotal, currency)}</strong>
                       </p>
                       <p className="text-[10px] text-emerald-400 font-mono">
-                        Line Profit: +{formatCurrency(lineProfit, currency)}
+                        Profit: +{formatCurrency(lineProfit, currency)}
                       </p>
                     </div>
 
@@ -303,22 +296,22 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         onClick={() => updateCartQty(item.productId, item.quantity - 1)}
-                        className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95"
+                        className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center font-extrabold text-white text-xs font-mono">{item.quantity}</span>
+                      <span className="w-5 text-center font-extrabold text-white text-xs font-mono">{item.quantity}</span>
                       <button
                         onClick={() => updateCartQty(item.productId, item.quantity + 1)}
-                        className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95"
+                        className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => removeFromCart(item.productId)}
-                        className="p-1.5 text-gray-500 hover:text-rose-400 transition-colors ml-0.5"
+                        className="p-1 text-gray-500 hover:text-rose-400 transition-colors ml-0.5"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -326,7 +319,7 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
               })}
 
               {cart.items.length === 0 && (
-                <div className="py-8 text-center text-gray-500 text-xs">
+                <div className="py-6 text-center text-gray-500 text-xs">
                   Cart is empty. Click any item on the left to add.
                 </div>
               )}
@@ -365,70 +358,18 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
                 })}
               </div>
             </div>
-
-            {/* If Udhaar chosen: Customer selection or quick input */}
-            {cart.paymentMethod === 'udhaar' && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-amber-300 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" /> Record Udhaar Debt
-                  </span>
-                  <button
-                    onClick={() => setIsNewCustMode(!isNewCustMode)}
-                    className="text-[11px] text-amber-400 underline font-semibold"
-                  >
-                    {isNewCustMode ? 'Select Existing' : '+ New Customer'}
-                  </button>
-                </div>
-
-                {isNewCustMode ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Customer Name"
-                      value={newCustName}
-                      onChange={(e) => setNewCustName(e.target.value)}
-                      className="px-2.5 py-1.5 bg-gray-900 border border-amber-500/40 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone Number"
-                      value={newCustPhone}
-                      onChange={(e) => setNewCustPhone(e.target.value)}
-                      className="px-2.5 py-1.5 bg-gray-900 border border-amber-500/40 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none"
-                    />
-                  </div>
-                ) : (
-                  <select
-                    value={cart.customerId || ''}
-                    onChange={(e) => {
-                      const c = customers.find((cust) => cust.id === e.target.value);
-                      setCartCustomer(e.target.value, c?.name, c?.phone);
-                    }}
-                    className="w-full px-2.5 py-1.5 bg-gray-900 border border-amber-500/40 rounded-lg text-white text-xs focus:outline-none"
-                  >
-                    <option value="">-- Choose Customer --</option>
-                    {customers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.phone}) - Udhaar: {formatCurrency(c.currentBalance, currency)}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Cart Summary & Checkout Action */}
-          <div className="pt-3 border-t border-white/10 space-y-3">
-            <div className="space-y-1.5 text-xs">
+          <div className="pt-2 border-t border-white/10 space-y-2.5">
+            <div className="space-y-1 text-xs">
               <div className="flex justify-between text-gray-400">
-                <span>Total Inventory Cost:</span>
+                <span>Inventory Cost:</span>
                 <span className="font-mono">{formatCurrency(cartTotals.totalCost, currency)}</span>
               </div>
               <div className="flex justify-between text-emerald-400 font-bold">
                 <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> Net Profit on this Sale:
+                  <TrendingUp className="w-3.5 h-3.5" /> Net Profit Margin:
                 </span>
                 <span className="text-glow-green text-sm font-mono">+{formatCurrency(cartTotals.estimatedProfit, currency)}</span>
               </div>

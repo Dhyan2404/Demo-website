@@ -8,14 +8,12 @@ import {
   Plus,
 } from 'lucide-react';
 import { useScrollStore } from '../../store/useScrollStore.js';
-import { useThemeStore } from '../../store/useThemeStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 
 export const MobileBottomNav = () => {
   const activeSection = useScrollStore((state) => state.activeSection);
-  const scrollToSection = useScrollStore((state) => state.scrollToSection);
-  const openModal = useThemeStore((state) => state.openModal);
+  const setActiveSection = useScrollStore((state) => state.setActiveSection);
 
   const customers = useCustomerStore((state) => state.customers);
   const products = useInventoryStore((state) => state.products);
@@ -30,10 +28,10 @@ export const MobileBottomNav = () => {
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Boxes },
-    { id: 'inventory-section', label: 'Stock', icon: Package, badge: inventoryAlerts },
-    { id: 'pos-fab', label: 'New Sale', icon: Plus, isAction: true },
-    { id: 'udhaar-section', label: 'Udhaar', icon: CreditCard, badge: pendingDebtors },
-    { id: 'analytics-section', label: 'Profit', icon: BarChart3 },
+    { id: 'inventory', label: 'Stock', icon: Package, badge: inventoryAlerts },
+    { id: 'pos', label: 'Billing', icon: Plus, isAction: true },
+    { id: 'udhaar', label: 'Udhaar', icon: CreditCard, badge: pendingDebtors },
+    { id: 'analytics', label: 'Profit', icon: BarChart3 },
   ];
 
   return (
@@ -41,20 +39,24 @@ export const MobileBottomNav = () => {
       <div className="max-w-md mx-auto flex items-center justify-around relative">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeSection === item.id;
+          const isActive = activeSection === item.id || activeSection === `${item.id}-section`;
 
           if (item.isAction) {
             return (
               <div key={item.id} className="relative -top-5 flex flex-col items-center">
                 <button
-                  onClick={() => openModal('pos')}
-                  className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 via-emerald-400 to-teal-300 text-gray-950 flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95 transition-all border-2 border-gray-950"
-                  aria-label="New Sale Counter"
+                  onClick={() => setActiveSection('pos')}
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all border-2 border-gray-950 shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 ${
+                    isActive
+                      ? 'bg-gradient-to-tr from-cyan-400 to-emerald-400 text-gray-950 scale-105 ring-2 ring-emerald-400'
+                      : 'bg-gradient-to-tr from-emerald-500 via-emerald-400 to-teal-300 text-gray-950'
+                  }`}
+                  aria-label="Express POS Billing"
                 >
                   <Plus className="w-7 h-7 text-gray-950 stroke-[3]" />
                 </button>
                 <span className="text-[10px] font-bold text-emerald-400 mt-1 uppercase tracking-tight">
-                  + Sale
+                  + POS
                 </span>
               </div>
             );
@@ -63,7 +65,7 @@ export const MobileBottomNav = () => {
           return (
             <button
               key={item.id}
-              onClick={() => scrollToSection(item.id)}
+              onClick={() => setActiveSection(item.id)}
               className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
                 isActive
                   ? 'text-emerald-400 font-bold scale-105'

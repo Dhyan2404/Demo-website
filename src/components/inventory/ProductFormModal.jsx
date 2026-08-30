@@ -6,7 +6,7 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const ProductFormModal = ({ isOpen, onClose, initialData = null }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
   const addProduct = useInventoryStore((state) => state.addProduct);
   const updateProduct = useInventoryStore((state) => state.updateProduct);

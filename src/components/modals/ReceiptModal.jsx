@@ -5,8 +5,8 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency, formatDateTime } from '../../utils/formatters.js';
 
 export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
-  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
+  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
   const receiptAreaRef = useRef(null);
 
   if (!sale) return null;
