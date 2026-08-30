@@ -44,7 +44,7 @@ function FloatingGoldCoin({ position, scale = 0.6 }) {
 
   return (
     <Float speed={2} rotationIntensity={0.8} floatIntensity={1.2} position={position}>
-      <group ref={coinRef} scale={scale}>
+      <mesh ref={coinRef} scale={scale}>
         <cylinderGeometry args={[0.8, 0.8, 0.12, 24]} />
         <meshStandardMaterial
           color="#fbbf24"
@@ -53,7 +53,7 @@ function FloatingGoldCoin({ position, scale = 0.6 }) {
           emissive="#f59e0b"
           emissiveIntensity={0.35}
         />
-      </group>
+      </mesh>
     </Float>
   );
 }

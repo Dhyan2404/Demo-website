@@ -68,7 +68,7 @@ export const KPISection = () => {
       <StatCard
         title="Gross Sales (Revenue)"
         formattedValue={formatCurrency(totalRevenue, currency)}
-        subtitle={`${sales.length} Invoices Billed`}
+        subtitle={`${(sales || []).length} Invoices Billed`}
         icon={DollarSign}
         color="cyan"
         trend={8.2}
