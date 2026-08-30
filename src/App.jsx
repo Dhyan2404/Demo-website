@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Canvas3D } from './components/3d/Canvas3D.jsx';
 import { Navbar } from './components/common/Navbar.jsx';
+import { MobileBottomNav } from './components/common/MobileBottomNav.jsx';
 import { DashboardHero } from './components/dashboard/DashboardHero.jsx';
 import { KPISection } from './components/dashboard/KPISection.jsx';
 import { ProfitOverviewChart } from './components/dashboard/ProfitOverviewChart.jsx';
@@ -62,9 +63,7 @@ export function App() {
             }
           }
         }
-      } catch (err) {
-        // Safe scroll error catch
-      }
+      } catch (err) {}
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -84,7 +83,7 @@ export function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans">
+    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans pb-20 lg:pb-0">
       {/* 3D WebGL Background Canvas with Ambient Fallback */}
       <Canvas3D />
 
@@ -94,7 +93,7 @@ export function App() {
         <Navbar />
 
         {/* Main Content Sections */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-12">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-8 py-5 sm:py-8 space-y-10 sm:space-y-12">
           {/* Section 1: Main Dashboard */}
           <section id="dashboard" className="scroll-mt-24 space-y-6">
             <DashboardHero />
@@ -146,6 +145,9 @@ export function App() {
           </div>
         </footer>
       </div>
+
+      {/* Floating Bottom Navigation Dock for Mobile Phones */}
+      <MobileBottomNav />
 
       {/* Global Interactive Modals */}
       <QuickPOSModal isOpen={activeModal === 'pos'} onClose={closeModal} />

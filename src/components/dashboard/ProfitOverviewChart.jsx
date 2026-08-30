@@ -7,7 +7,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
 } from 'recharts';
 import { TrendingUp, Layers } from 'lucide-react';
 import { useSalesStore } from '../../store/useSalesStore.js';
@@ -23,21 +22,21 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
     const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
 
     return (
-      <div className="glass-panel p-3.5 rounded-xl border border-white/15 shadow-2xl space-y-1.5 min-w-[170px]">
+      <div className="glass-panel p-3.5 rounded-2xl border border-white/15 shadow-2xl space-y-1.5 min-w-[170px]">
         <p className="text-xs font-bold text-gray-300 border-b border-white/10 pb-1">{label}</p>
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-400">Revenue:</span>
-          <span className="font-semibold text-cyan-400">{formatCurrency(revenue, currency)}</span>
+          <span className="font-semibold text-cyan-400 font-mono">{formatCurrency(revenue, currency)}</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-400">Cost:</span>
-          <span className="font-semibold text-rose-400">{formatCurrency(cost, currency)}</span>
+          <span className="font-semibold text-rose-400 font-mono">{formatCurrency(cost, currency)}</span>
         </div>
         <div className="flex items-center justify-between text-xs pt-1 border-t border-white/10">
           <span className="text-emerald-400 font-bold">Net Profit:</span>
-          <span className="font-extrabold text-emerald-300 text-glow-green">+{formatCurrency(profit, currency)}</span>
+          <span className="font-black text-emerald-300 text-glow-green font-mono">+{formatCurrency(profit, currency)}</span>
         </div>
-        <div className="text-[10px] text-right text-gray-500 font-medium">
+        <div className="text-[10px] text-right text-gray-400 font-bold">
           Margin: {margin}%
         </div>
       </div>
@@ -54,8 +53,8 @@ export const ProfitOverviewChart = () => {
   const chartData = generateTimelineChartData(sales, periodFilter);
 
   return (
-    <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+    <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
             <TrendingUp className="w-5 h-5" />
@@ -66,23 +65,23 @@ export const ProfitOverviewChart = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-            <span className="text-gray-300 font-medium">Net Profit</span>
+            <span className="text-gray-300 font-semibold">Net Profit</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-cyan-400" />
-            <span className="text-gray-300 font-medium">Revenue</span>
+            <span className="text-gray-300 font-semibold">Revenue</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-rose-400" />
-            <span className="text-gray-300 font-medium">Cost</span>
+            <span className="text-gray-300 font-semibold">Cost</span>
           </div>
         </div>
       </div>
 
-      <div className="h-72 w-full pt-2">
+      <div className="h-64 sm:h-72 w-full pt-2">
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -97,10 +96,10 @@ export const ProfitOverviewChart = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="name" stroke="#6b7280" fontSize={11} tickLine={false} />
+              <XAxis dataKey="name" stroke="#6b7280" fontSize={10} tickLine={false} />
               <YAxis
                 stroke="#6b7280"
-                fontSize={11}
+                fontSize={10}
                 tickLine={false}
                 tickFormatter={(v) => `${currency}${formatCompactNumber(v)}`}
               />
@@ -133,7 +132,7 @@ export const ProfitOverviewChart = () => {
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+          <div className="h-full flex items-center justify-center text-gray-500 text-xs sm:text-sm">
             No sales recorded in the selected period. Enter a sale to see live profit curves.
           </div>
         )}

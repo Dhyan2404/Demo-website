@@ -112,7 +112,7 @@ export const AnalyticsSection = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-white/[0.04] p-1 rounded-xl border border-white/10">
+        <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 overflow-x-auto custom-scrollbar">
           {[
             { id: 'today', label: 'Today' },
             { id: '7days', label: '7D' },
@@ -123,7 +123,7 @@ export const AnalyticsSection = () => {
             <button
               key={f.id}
               onClick={() => setPeriodFilter(f.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 periodFilter === f.id
                   ? 'bg-cyan-500 text-gray-950 shadow-sm'
                   : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
@@ -152,7 +152,7 @@ export const AnalyticsSection = () => {
                   Sold {topProfitable.unitsSold} units • Total Revenue: {formatCurrency(topProfitable.totalRevenue, currency)}
                 </p>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-emerald-400 text-glow-green">
+                  <span className="text-2xl font-black text-emerald-400 text-glow-green font-mono">
                     +{formatCurrency(topProfitable.totalProfit, currency)}
                   </span>
                   <span className="text-xs text-emerald-300 font-semibold">Net Profit Generated</span>
@@ -183,7 +183,7 @@ export const AnalyticsSection = () => {
                   Total Revenue: {formatCurrency(topSold.totalRevenue, currency)} • Profit: +{formatCurrency(topSold.totalProfit, currency)}
                 </p>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-cyan-400 text-glow-cyan">
+                  <span className="text-2xl font-black text-cyan-400 text-glow-cyan font-mono">
                     {topSold.unitsSold} Units
                   </span>
                   <span className="text-xs text-cyan-300 font-semibold">Total Quantity Sold</span>
@@ -201,7 +201,7 @@ export const AnalyticsSection = () => {
       </div>
 
       {/* Category Profit Contribution Chart */}
-      <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h4 className="text-base font-bold text-white tracking-tight">Category Profit Contribution</h4>
@@ -209,7 +209,7 @@ export const AnalyticsSection = () => {
           </div>
         </div>
 
-        <div className="h-64 w-full pt-2">
+        <div className="h-60 sm:h-64 w-full pt-2">
           {categoryChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
@@ -246,7 +246,7 @@ export const AnalyticsSection = () => {
       </div>
 
       {/* Backup & Export Hub */}
-      <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
         <div>
           <h4 className="text-base font-bold text-white tracking-tight">Data Export & Backup Center</h4>
           <p className="text-xs text-gray-400">
@@ -257,29 +257,29 @@ export const AnalyticsSection = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <button
             onClick={() => exportSalesToCSV(sales)}
-            className="p-3.5 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 flex flex-col items-center text-center gap-2 transition-all group"
+            className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 flex flex-col items-center text-center gap-2 transition-all group"
           >
             <Download className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
             <div>
               <p className="text-xs font-bold text-white">Sales & Profit CSV</p>
-              <p className="text-[10px] text-gray-400">Invoices & revenue records</p>
+              <p className="text-[10px] text-gray-400">Invoices & revenue</p>
             </div>
           </button>
 
           <button
             onClick={() => exportInventoryToCSV(products)}
-            className="p-3.5 rounded-xl bg-white/[0.03] hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 flex flex-col items-center text-center gap-2 transition-all group"
+            className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 flex flex-col items-center text-center gap-2 transition-all group"
           >
             <Download className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
             <div>
               <p className="text-xs font-bold text-white">Inventory CSV</p>
-              <p className="text-[10px] text-gray-400">Products, costs & margins</p>
+              <p className="text-[10px] text-gray-400">Products & costs</p>
             </div>
           </button>
 
           <button
             onClick={() => exportCustomersToCSV(customers)}
-            className="p-3.5 rounded-xl bg-white/[0.03] hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 flex flex-col items-center text-center gap-2 transition-all group"
+            className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 flex flex-col items-center text-center gap-2 transition-all group"
           >
             <Download className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
             <div>
@@ -290,7 +290,7 @@ export const AnalyticsSection = () => {
 
           <button
             onClick={handleBackupExport}
-            className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 flex flex-col items-center text-center gap-2 transition-all group"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 flex flex-col items-center text-center gap-2 transition-all group"
           >
             <Download className="w-5 h-5 text-emerald-300 group-hover:scale-110 transition-transform" />
             <div>
@@ -302,10 +302,10 @@ export const AnalyticsSection = () => {
 
         {/* Restore Section */}
         <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 text-center sm:text-left">
             Have a previous SmartShop backup JSON file? Restore all inventory, sales, and customers instantly:
           </p>
-          <label className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-xs font-bold text-white cursor-pointer transition-all shrink-0">
+          <label className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-xs font-bold text-white cursor-pointer transition-all shrink-0">
             <Upload className="w-4 h-4 text-cyan-400" />
             <span>Restore Backup JSON</span>
             <input type="file" accept=".json" onChange={handleRestoreFile} className="hidden" />

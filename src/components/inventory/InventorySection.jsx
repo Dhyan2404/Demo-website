@@ -14,6 +14,7 @@ import {
   Download,
   Layers,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
@@ -22,8 +23,6 @@ import { exportInventoryToCSV } from '../../services/exportService.js';
 import { formatCurrency, formatPercentage } from '../../utils/formatters.js';
 
 export const InventorySection = () => {
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
-
   const products = useInventoryStore((state) => state.products);
   const categories = useInventoryStore((state) => state.getCategories());
   const selectedCategory = useInventoryStore((state) => state.selectedCategory);
@@ -33,7 +32,6 @@ export const InventorySection = () => {
   const stockFilter = useInventoryStore((state) => state.stockFilter);
   const setStockFilter = useInventoryStore((state) => state.setStockFilter);
   const sortBy = useInventoryStore((state) => state.sortBy);
-  const sortOrder = useInventoryStore((state) => state.sortOrder);
   const setSort = useInventoryStore((state) => state.setSort);
   const adjustStock = useInventoryStore((state) => state.adjustStock);
   const deleteProduct = useInventoryStore((state) => state.deleteProduct);
@@ -59,16 +57,16 @@ export const InventorySection = () => {
       {/* Header & Title Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
               <Package className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-white tracking-tight">
-                Inventory & Stock Management
+                Stock & Inventory Hub
               </h2>
               <p className="text-xs text-gray-400">
-                Track stock quantities, cost bases, and profit margins in real-time
+                Track stock quantities, cost basis, and pocketed profit margins in real time
               </p>
             </div>
           </div>
@@ -77,7 +75,7 @@ export const InventorySection = () => {
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => exportInventoryToCSV(products)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-bold text-gray-300 hover:text-white transition-all"
             title="Download Inventory CSV"
           >
             <Download className="w-4 h-4 text-gray-400" />
@@ -86,7 +84,7 @@ export const InventorySection = () => {
 
           <button
             onClick={() => openModal('product_form')}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-black text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Plus className="w-4 h-4 text-gray-950 stroke-[3]" />
             <span>+ Add Product</span>
@@ -96,33 +94,33 @@ export const InventorySection = () => {
 
       {/* Valuation & Stock Metrics Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 space-y-1">
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Catalog Items</span>
-          <p className="text-xl font-extrabold text-white">{products.length} Products</p>
+        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider">Catalog Size</span>
+          <p className="text-lg sm:text-xl font-black text-white">{products.length} Products</p>
           <p className="text-[10px] text-gray-500">{categories.length - 1} Categories Active</p>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 space-y-1">
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Stock Valuation (Cost)</span>
-          <p className="text-xl font-extrabold text-rose-300">{formatCurrency(valuation.totalCostValue, currency)}</p>
-          <p className="text-[10px] text-gray-500">Total invested inventory cost</p>
+        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider">Cost Invested</span>
+          <p className="text-lg sm:text-xl font-black text-rose-300 font-mono">{formatCurrency(valuation.totalCostValue, currency)}</p>
+          <p className="text-[10px] text-gray-500">Inventory cost basis</p>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 space-y-1">
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Retail Value (Selling)</span>
-          <p className="text-xl font-extrabold text-cyan-300">{formatCurrency(valuation.totalRetailValue, currency)}</p>
+        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider">Retail Value</span>
+          <p className="text-lg sm:text-xl font-black text-cyan-300 font-mono">{formatCurrency(valuation.totalRetailValue, currency)}</p>
           <p className="text-[10px] text-gray-500">Expected sales realization</p>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 space-y-1 bg-gradient-to-br from-emerald-950/30 to-transparent">
-          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Projected Profit</span>
-          <p className="text-xl font-extrabold text-emerald-400 text-glow-green">+{formatCurrency(valuation.projectedProfit, currency)}</p>
-          <p className="text-[10px] text-emerald-400/80">Unrealized stock profit</p>
+        <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/5 space-y-1 bg-gradient-to-br from-emerald-950/30 to-transparent">
+          <span className="text-[10px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Projected Profit</span>
+          <p className="text-lg sm:text-xl font-black text-emerald-400 text-glow-green font-mono">+{formatCurrency(valuation.projectedProfit, currency)}</p>
+          <p className="text-[10px] text-emerald-400/80">Unrealized profit margin</p>
         </div>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="glass-panel p-4 rounded-2xl border border-white/10 space-y-3">
+      <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/10 space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search bar */}
           <div className="relative flex-1">
@@ -132,22 +130,22 @@ export const InventorySection = () => {
               placeholder="Filter by product name, SKU, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-gray-900/90 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 text-xs"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-900/90 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-xs"
             />
           </div>
 
           {/* Stock Level Quick Filters */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
             {[
               { id: 'all', label: `All (${products.length})` },
               { id: 'in_stock', label: 'In Stock' },
-              { id: 'low', label: `Low Stock (${lowStockCount})`, alert: lowStockCount > 0 },
-              { id: 'out', label: `Out of Stock (${outOfStockCount})`, danger: outOfStockCount > 0 },
+              { id: 'low', label: `Low (${lowStockCount})`, alert: lowStockCount > 0 },
+              { id: 'out', label: `Out (${outOfStockCount})`, danger: outOfStockCount > 0 },
             ].map((f) => (
               <button
                 key={f.id}
                 onClick={() => setStockFilter(f.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   stockFilter === f.id
                     ? f.danger
                       ? 'bg-rose-500 text-white shadow-sm'
@@ -167,7 +165,7 @@ export const InventorySection = () => {
             <select
               value={sortBy}
               onChange={(e) => setSort(e.target.value)}
-              className="px-3 py-1.5 bg-gray-900 border border-white/10 rounded-xl text-white text-xs focus:outline-none"
+              className="w-full md:w-auto px-3 py-2 bg-gray-900 border border-white/10 rounded-xl text-white text-xs focus:outline-none font-medium"
             >
               <option value="updatedAt">Sort: Recently Updated</option>
               <option value="name">Sort: Name (A-Z)</option>
@@ -185,9 +183,9 @@ export const InventorySection = () => {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 selectedCategory === cat
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
                   : 'bg-white/[0.02] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06]'
               }`}
             >
@@ -198,12 +196,12 @@ export const InventorySection = () => {
       </div>
 
       {/* Product Grid Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
         {filteredProducts.map((product) => {
           const inStock = product.stock > 0;
           const isLow = inStock && product.stock <= (product.minThreshold || 5);
           const unitProfit = product.sellingPrice - product.costPrice;
-          const margin = product.sellingPrice > 0 ? ((unitProfit / product.sellingPrice) * 100).toFixed(1) : 0;
+          const margin = product.sellingPrice > 0 ? ((unitProfit / product.sellingPrice) * 100).toFixed(0) : 0;
 
           return (
             <div
@@ -213,7 +211,7 @@ export const InventorySection = () => {
                   ? 'border-rose-500/30 bg-rose-950/10'
                   : isLow
                   ? 'border-amber-500/30 bg-amber-950/10'
-                  : 'border-white/10 hover:border-emerald-500/40'
+                  : 'border-white/10 hover:border-emerald-500/40 shadow-sm'
               }`}
             >
               {/* Header Info */}
@@ -226,7 +224,7 @@ export const InventorySection = () => {
                     variant={!inStock ? 'danger' : isLow ? 'warning' : 'success'}
                     size="sm"
                   >
-                    {!inStock ? 'Out of Stock' : isLow ? `Low (${product.stock})` : `${product.stock} ${product.unit}`}
+                    {!inStock ? 'Out of Stock' : isLow ? `Low (${product.stock} ${product.unit})` : `${product.stock} ${product.unit}`}
                   </Badge>
                 </div>
 
@@ -239,58 +237,58 @@ export const InventorySection = () => {
               {/* Price & Profit Breakdown */}
               <div className="my-3 py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5 text-xs">
                 <div className="flex items-center justify-between text-gray-400">
-                  <span>Cost Price:</span>
-                  <span className="font-semibold text-rose-300">{formatCurrency(product.costPrice, currency)}</span>
+                  <span>Cost:</span>
+                  <span className="font-semibold text-rose-300 font-mono">{formatCurrency(product.costPrice, currency)}</span>
                 </div>
                 <div className="flex items-center justify-between text-gray-300">
-                  <span>Selling Price:</span>
-                  <span className="font-bold text-white">{formatCurrency(product.sellingPrice, currency)}</span>
+                  <span>Retail Price:</span>
+                  <span className="font-bold text-white font-mono">{formatCurrency(product.sellingPrice, currency)}</span>
                 </div>
-                <div className="flex items-center justify-between text-emerald-400 font-semibold pt-1 border-t border-white/5">
-                  <span>Profit Per Unit:</span>
-                  <span className="text-glow-green">+{formatCurrency(unitProfit, currency)} ({margin}%)</span>
+                <div className="flex items-center justify-between text-emerald-400 font-bold pt-1 border-t border-white/5">
+                  <span>Pocket Margin:</span>
+                  <span className="text-glow-green font-mono">+{formatCurrency(unitProfit, currency)} ({margin}%)</span>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
                 {/* Quick Stock Controls */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/5">
                   <button
                     onClick={() => adjustStock(product.id, -1)}
                     disabled={product.stock <= 0}
-                    className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/10 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
                     title="Quick -1 Stock"
                   >
-                    <MinusCircle className="w-3.5 h-3.5" />
+                    <MinusCircle className="w-4 h-4" />
                   </button>
-                  <span className="text-xs font-bold text-white px-1">{product.stock}</span>
+                  <span className="text-xs font-black text-white px-2 font-mono">{product.stock}</span>
                   <button
                     onClick={() => adjustStock(product.id, 1)}
-                    className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/10 text-gray-400 hover:text-emerald-400 transition-all"
+                    className="w-7 h-7 rounded-lg bg-white/5 hover:bg-emerald-500/20 flex items-center justify-center text-gray-300 hover:text-emerald-400 active:scale-95 transition-all"
                     title="Quick +1 Stock"
                   >
-                    <PlusCircle className="w-3.5 h-3.5" />
+                    <PlusCircle className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => openModal('stock_adjust', product)}
-                    className="px-2 py-1 rounded-lg bg-white/[0.04] hover:bg-white/10 text-[11px] font-semibold text-gray-300 hover:text-white transition-all"
+                    className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/10 text-[11px] font-bold text-gray-300 hover:text-white transition-all"
                   >
                     Restock
                   </button>
                   <button
                     onClick={() => openModal('product_form', product)}
-                    className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/10 text-gray-400 hover:text-white transition-all"
-                    title="Edit Product Details"
+                    className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                    title="Edit Product"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDelete(product.id, product.name)}
-                    className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-rose-500/20 text-gray-500 hover:text-rose-400 transition-all"
+                    className="p-2 rounded-xl bg-white/[0.04] hover:bg-rose-500/20 text-gray-500 hover:text-rose-400 transition-all"
                     title="Delete Product"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
