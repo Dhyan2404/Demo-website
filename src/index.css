@@ -283,3 +283,27 @@
     display: none !important;
   }
 }
+
+/* ── iOS / iPhone notch / safe-area support ── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+  nav.fixed.bottom-0 {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.25rem);
+  }
+}
+
+/* ── Mobile touch optimizations ── */
+@media (max-width: 640px) {
+  /* Ensure buttons have a minimum 44x44px tap area */
+  button, a[role="button"] {
+    min-height: 36px;
+  }
+
+  /* Prevent text from being too tiny */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    border-radius: 0.75rem;
+  }
+}

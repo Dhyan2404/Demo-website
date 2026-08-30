@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Store, User, DollarSign, Bell, Shield, Phone, MapPin, QrCode, Download, Upload, Check, Sparkles } from 'lucide-react';
+import { Store, User, DollarSign, Bell, Shield, Phone, MapPin, QrCode, Download, Upload, Check, Sparkles, ShoppingBag, Package } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../common/Modal.jsx';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
 import { exportFullBackupJSON, readBackupJSONFile } from '../../services/exportService.js';
+import { SHOP_TYPE_LIST } from '../../data/shopTemplates.js';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
   const settings = useThemeStore((state) => state.settings);
@@ -19,6 +21,8 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   const customers = useCustomerStore((state) => state.customers);
   const importCustomers = useCustomerStore((state) => state.importCustomers);
 
+  const addProduct = useInventoryStore((state) => state.addProduct);
+
   const [form, setForm] = useState({
     shopName: '',
     ownerName: '',
@@ -29,7 +33,12 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     lowStockDefaultThreshold: 5,
     upiId: '',
     gstNumber: '',
+    shopType: '',
   });
+
+  const [selectedShopType, setSelectedShopType] = useState(null);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   useEffect(() => {
     if (settings) {
@@ -43,9 +52,34 @@ export const SettingsModal = ({ isOpen, onClose }) => {
         lowStockDefaultThreshold: settings.lowStockDefaultThreshold || 5,
         upiId: settings.upiId || '',
         gstNumber: settings.gstNumber || '',
+        shopType: settings.shopType || '',
       });
+      if (settings.shopType) {
+        setSelectedShopType(SHOP_TYPE_LIST.find(t => t.id === settings.shopType) || null);
+      }
     }
   }, [settings, isOpen]);
+
+  const handleLoadShopProducts = async () => {
+    if (!selectedShopType) return;
+    setLoadingProducts(true);
+    try {
+      let count = 0;
+      for (const p of selectedShopType.products) {
+        // Check if SKU already exists
+        const exists = products.some(ep => ep.sku === p.sku || ep.name.toLowerCase() === p.name.toLowerCase());
+        if (!exists) {
+          addProduct({ ...p, id: undefined });
+          count++;
+        }
+      }
+      setLoadedCount(count);
+      showToast(`${count} products added to inventory!`, 'success');
+      updateSettings({ ...form, shopType: selectedShopType.id });
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -92,8 +126,68 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     >
       <form onSubmit={handleSave} className="space-y-5">
         
-        {/* Shop Branding */}
+        {/* Shop Type Selector */}
         <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+            Shop Category
+          </h4>
+          <p className="text-[11px] text-gray-400">Select your shop type to get a starter product catalog instantly loaded into your inventory.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {SHOP_TYPE_LIST.map((type) => {
+              const isSelected = selectedShopType?.id === type.id;
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedShopType(isSelected ? null : type);
+                    setForm(f => ({ ...f, shopType: isSelected ? '' : type.id }));
+                    setLoadedCount(0);
+                  }}
+                  className={`relative p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-amber-500/60 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-gray-300'
+                  }`}
+                >
+                  <div className="text-lg mb-0.5">{type.icon}</div>
+                  <div className="text-[11px] font-bold leading-tight">{type.label}</div>
+                  <div className="text-[10px] opacity-60 mt-0.5">{type.products.length} products</div>
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedShopType && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-white">{selectedShopType.icon} {selectedShopType.label} selected</p>
+                <p className="text-[11px] text-gray-400">
+                  {selectedShopType.products.length} products ready to load
+                  {loadedCount > 0 && <span className="text-emerald-400 font-semibold"> · {loadedCount} added ✓</span>}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLoadShopProducts}
+                disabled={loadingProducts}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Package className="w-3.5 h-3.5" />
+                {loadingProducts ? 'Loading...' : 'Load Products'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Shop Branding */}
+        <div className="space-y-3 pt-2 border-t border-white/10">
           <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Shop Identity</h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
