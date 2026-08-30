@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  base: './', // Ensures assets load properly on GitHub Pages, Vercel, Netlify, and custom domains
   plugins: [react()],
   server: {
     port: 5173,
@@ -15,6 +16,7 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: 'dist',
     rollupOptions: {
       output: {
         manualChunks(id) {
