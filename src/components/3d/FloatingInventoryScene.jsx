@@ -1,11 +1,10 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, RoundedBox } from '@react-three/drei';
+import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { useThemeStore } from '../../store/useThemeStore.js';
-import { useScrollStore } from '../../store/useScrollStore.js';
 
-function GlowingInventoryCube({ position, color, scale = 1, speed = 1 }) {
+function GlowingInventoryCube({ position, color, emissiveColor, scale = 1, speed = 1 }) {
   const meshRef = useRef();
 
   useFrame((state) => {
@@ -16,18 +15,17 @@ function GlowingInventoryCube({ position, color, scale = 1, speed = 1 }) {
   });
 
   return (
-    <Float speed={speed * 1.5} rotationIntensity={1} floatIntensity={1.5} position={position}>
+    <Float speed={speed * 1.5} rotationIntensity={0.8} floatIntensity={1.2} position={position}>
       <mesh ref={meshRef} scale={scale}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshPhysicalMaterial
+        <meshStandardMaterial
           color={color}
-          roughness={0.15}
-          metalness={0.8}
-          transmission={0.4}
-          ior={1.5}
-          thickness={0.5}
+          roughness={0.2}
+          metalness={0.7}
+          emissive={emissiveColor || color}
+          emissiveIntensity={0.35}
           transparent
-          opacity={0.75}
+          opacity={0.85}
         />
       </mesh>
     </Float>
@@ -47,13 +45,13 @@ function FloatingGoldCoin({ position, scale = 0.6 }) {
   return (
     <Float speed={2} rotationIntensity={0.8} floatIntensity={1.2} position={position}>
       <group ref={coinRef} scale={scale}>
-        <cylinderGeometry args={[0.8, 0.8, 0.12, 32]} />
+        <cylinderGeometry args={[0.8, 0.8, 0.12, 24]} />
         <meshStandardMaterial
           color="#fbbf24"
           metalness={0.9}
           roughness={0.2}
           emissive="#f59e0b"
-          emissiveIntensity={0.25}
+          emissiveIntensity={0.35}
         />
       </group>
     </Float>
@@ -73,15 +71,14 @@ function CyberRing({ position, radius = 2, color = '#22c55e' }) {
   return (
     <group ref={ringRef} position={position}>
       <mesh>
-        <torusGeometry args={[radius, 0.02, 16, 100]} />
-        <meshBasicMaterial color={color} transparent opacity={0.4} />
+        <torusGeometry args={[radius, 0.02, 16, 64]} />
+        <meshBasicMaterial color={color} transparent opacity={0.35} />
       </mesh>
     </group>
   );
 }
 
 export const FloatingInventoryScene = () => {
-  const activeSection = useScrollStore((state) => state.activeSection);
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   return (
@@ -89,7 +86,8 @@ export const FloatingInventoryScene = () => {
       {/* Central / Left Floating Cyber Emerald Box */}
       <GlowingInventoryCube
         position={[-2.4, 0.8, -0.5]}
-        color="#22c55e"
+        color="#10b981"
+        emissiveColor="#059669"
         scale={0.9}
         speed={0.8}
       />
@@ -98,6 +96,7 @@ export const FloatingInventoryScene = () => {
       <GlowingInventoryCube
         position={[2.6, 0.5, -0.8]}
         color="#06b6d4"
+        emissiveColor="#0891b2"
         scale={0.75}
         speed={1.1}
       />
@@ -111,7 +110,8 @@ export const FloatingInventoryScene = () => {
       <GlowingInventoryCube
         position={[0.2, 2.2, -2.5]}
         color="#f59e0b"
-        scale={1.2}
+        emissiveColor="#d97706"
+        scale={1.1}
         speed={0.6}
       />
 

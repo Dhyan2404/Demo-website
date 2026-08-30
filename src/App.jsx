@@ -15,6 +15,7 @@ import { AnalyticsSection } from './components/analytics/AnalyticsSection.jsx';
 import { QuickPOSModal } from './components/pos/QuickPOSModal.jsx';
 import { ProductFormModal } from './components/modals/ProductFormModal.jsx';
 import { CustomerFormModal } from './components/modals/CustomerFormModal.jsx';
+import { CustomerDetailModal } from './components/customers/CustomerDetailModal.jsx';
 import { RecordPaymentModal } from './components/modals/RecordPaymentModal.jsx';
 import { ReceiptModal } from './components/modals/ReceiptModal.jsx';
 import { SettingsModal } from './components/modals/SettingsModal.jsx';
@@ -34,28 +35,35 @@ export function App() {
   const activeModal = useThemeStore((state) => state.activeModal);
   const modalData = useThemeStore((state) => state.modalData);
   const closeModal = useThemeStore((state) => state.closeModal);
-  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
+  const openModal = useThemeStore((state) => state.openModal);
+  const showToast = useThemeStore((state) => state.showToast);
+  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   // Scroll spy & 3D camera tracker
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      setScrollState(scrollY, maxScroll);
+      try {
+        const scrollY = window.scrollY || 0;
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        setScrollState(scrollY, maxScroll);
 
-      const sections = ['dashboard', 'pos-section', 'inventory-section', 'udhaar-section', 'analytics-section'];
-      const scrollPosition = scrollY + 250;
+        const sections = ['dashboard', 'pos-section', 'inventory-section', 'udhaar-section', 'analytics-section'];
+        const scrollPosition = scrollY + 250;
 
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(sectionId);
-            break;
+        for (const sectionId of sections) {
+          const el = document.getElementById(sectionId);
+          if (el) {
+            const top = el.offsetTop;
+            const height = el.offsetHeight;
+            if (scrollPosition >= top && scrollPosition < top + height) {
+              setActiveSection(sectionId);
+              break;
+            }
           }
         }
+      } catch (err) {
+        // Safe scroll error catch
       }
     };
 
@@ -63,9 +71,21 @@ export function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [setActiveSection, setScrollState]);
 
+  const handleWhatsAppReminder = (customer) => {
+    if (!customer?.phone) {
+      showToast('No phone number saved for this customer', 'warning');
+      return;
+    }
+    const cleanPhone = customer.phone.replace(/[^0-9]/g, '');
+    const msg = encodeURIComponent(
+      `Hello ${customer.name}, this is a gentle reminder from ${shopName} regarding your pending balance of ${currency}${customer.currentBalance}. Thank you!`
+    );
+    window.open(`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}?text=${msg}`, '_blank');
+  };
+
   return (
-    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black">
-      {/* 3D WebGL Background Canvas */}
+    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans">
+      {/* 3D WebGL Background Canvas with Ambient Fallback */}
       <Canvas3D />
 
       {/* Main UI Container on Top of 3D Canvas */}
@@ -121,7 +141,7 @@ export function App() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Offline Storage Active
               </span>
-              <span>3D WebGL Powered</span>
+              <span className="text-emerald-400 font-medium">3D WebGL Active</span>
             </div>
           </div>
         </footer>
@@ -131,6 +151,13 @@ export function App() {
       <QuickPOSModal isOpen={activeModal === 'pos'} onClose={closeModal} />
       <ProductFormModal isOpen={activeModal === 'product_form'} onClose={closeModal} product={modalData} />
       <CustomerFormModal isOpen={activeModal === 'customer_form'} onClose={closeModal} />
+      <CustomerDetailModal
+        isOpen={activeModal === 'customer_detail'}
+        onClose={closeModal}
+        customer={modalData}
+        onRecordPayment={(cust) => openModal('record_payment', cust)}
+        onSendReminder={handleWhatsAppReminder}
+      />
       <RecordPaymentModal isOpen={activeModal === 'record_payment'} onClose={closeModal} customer={modalData} />
       <ReceiptModal isOpen={activeModal === 'receipt'} onClose={closeModal} sale={modalData} />
       <SettingsModal isOpen={activeModal === 'settings'} onClose={closeModal} />
@@ -142,4 +169,5 @@ export function App() {
     </div>
   );
 }
+
 export default App;

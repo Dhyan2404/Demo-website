@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Boxes,
   PlusCircle,
   Search,
   Bell,
-  Sun,
-  Moon,
   Sparkles,
   Settings,
   ShoppingBag,
@@ -21,8 +19,6 @@ export const Navbar = () => {
   const activeSection = useScrollStore((state) => state.activeSection);
   const scrollToSection = useScrollStore((state) => state.scrollToSection);
 
-  const isDarkMode = useThemeStore((state) => state.isDarkMode);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
   const openModal = useThemeStore((state) => state.openModal);
@@ -32,7 +28,7 @@ export const Navbar = () => {
   const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
   const totalAlerts = lowStockCount + outOfStockCount;
 
-  // Keyboard shortcut Ctrl+K / Cmd+K for global search
+  // Global Ctrl+K / Cmd+K shortcut
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -53,29 +49,33 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full px-4 sm:px-8 py-3 bg-gray-950/75 backdrop-blur-xl border-b border-white/[0.08] transition-colors">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-gray-950/80 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Left: Brand Identity */}
         <div
           onClick={() => scrollToSection('dashboard')}
-          className="flex items-center gap-3 cursor-pointer group shrink-0"
+          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 p-0.5 shadow-glow-green group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500 p-0.5 shadow-glow-green group-hover:scale-105 transition-transform">
             <div className="w-full h-full bg-gray-950 rounded-[10px] flex items-center justify-center">
-              <Boxes className="w-5 h-5 text-emerald-400 group-hover:rotate-12 transition-transform" />
+              <Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 group-hover:rotate-12 transition-transform" />
             </div>
           </div>
-          <div className="hidden sm:block">
+          <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-white tracking-tight text-base">{shopName}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold uppercase">3D PRO</span>
+              <span className="font-extrabold text-white tracking-tight text-sm sm:text-base truncate max-w-[140px] sm:max-w-none">
+                {shopName}
+              </span>
+              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold uppercase">
+                3D PRO
+              </span>
             </div>
-            <p className="text-[11px] text-gray-400 font-medium">Smart Inventory & Profit Suite</p>
+            <p className="hidden sm:block text-[11px] text-gray-400 font-medium">Smart Inventory & Profit Suite</p>
           </div>
         </div>
 
-        {/* Center: Scroll-Spied Nav Links */}
+        {/* Center: Desktop Nav Links */}
         <nav className="hidden lg:flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] p-1.5 rounded-2xl">
           {navLinks.map((link) => {
             const Icon = link.icon;
@@ -98,11 +98,11 @@ export const Navbar = () => {
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {/* Quick Search Shortcut */}
           <button
             onClick={() => openModal('quick_search')}
-            className="flex items-center gap-2 px-3 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-xs text-gray-300 transition-all hover:border-white/20"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-xs text-gray-300 transition-all hover:border-white/20"
             title="Global Search (Ctrl+K)"
           >
             <Search className="w-4 h-4 text-gray-400" />
@@ -113,7 +113,7 @@ export const Navbar = () => {
           {/* Stock Alert Bell */}
           <button
             onClick={() => scrollToSection('inventory-section')}
-            className="relative p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
+            className="relative p-2 sm:p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
             title={`${totalAlerts} Low / Out-of-Stock Alerts`}
           >
             <Bell className="w-4 h-4 text-gray-400" />
@@ -141,16 +141,16 @@ export const Navbar = () => {
           {/* Settings Button */}
           <button
             onClick={() => openModal('settings')}
-            className="p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
+            className="p-2 sm:p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
             title="Shop Settings & Backup"
           >
             <Settings className="w-4 h-4 text-gray-400" />
           </button>
 
-          {/* Primary Quick Sale Button */}
+          {/* Primary Quick Sale Button (Desktop) */}
           <button
             onClick={() => openModal('pos')}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold rounded-xl text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="hidden sm:flex items-center gap-2 px-3.5 sm:px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold rounded-xl text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <PlusCircle className="w-4 h-4 text-gray-950" />
             <span className="font-extrabold">+ New Sale</span>
