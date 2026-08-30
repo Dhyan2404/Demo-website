@@ -3,268 +3,247 @@ import { persist } from 'zustand/middleware';
 import { initialSales } from '../services/mockData.js';
 import { useInventoryStore } from './useInventoryStore.js';
 import { useCustomerStore } from './useCustomerStore.js';
-import { filterByPeriod } from '../utils/calculations.js';
 import { apiService } from '../services/api.js';
 
 export const useSalesStore = create(
   persist(
     (set, get) => ({
       sales: initialSales,
-      cart: {
-        items: [],
-        paymentMethod: 'cash', // 'cash' | 'upi' | 'card' | 'udhaar'
-        paidAmount: 0,
-        customerId: null,
-        customerName: 'Walk-in Customer',
-        customerPhone: '',
-        notes: '',
-      },
-      periodFilter: '30days', // 'today' | '7days' | '30days' | '1year' | 'all'
+      cart: [], // Array of { product, quantity, customPrice }
+      selectedCustomer: null, // null or customer object
+      paymentMethod: 'cash', // 'cash' | 'upi' | 'card' | 'udhaar'
+      paidAmount: 0,
+      discountAmount: 0,
+      activeTaxRate: 0, // 0 | 5 | 12 | 18
+      periodFilter: 'today', // 'today' | '7days' | '30days' | '1year' | 'all'
       lastCompletedSale: null,
 
+      // Filter Actions
       setPeriodFilter: (period) => set({ periodFilter: period }),
+      importSales: (newSales) => set({ sales: Array.isArray(newSales) ? newSales : [] }),
 
       // Cart Actions
       addToCart: (product, qty = 1) => {
-        const cart = get().cart;
-        const existingIndex = cart.items.findIndex(
-          (i) => i.productId === product.id || i.productId === product._id
-        );
+        const { cart } = get();
+        const existing = cart.find((item) => item.product.id === product.id || item.product._id === product.id);
 
-        let newItems;
-        if (existingIndex >= 0) {
-          newItems = [...cart.items];
-          const updatedQty = newItems[existingIndex].quantity + qty;
-          // Check stock bounds
-          if (product.stock > 0 && updatedQty > product.stock) {
-            newItems[existingIndex].quantity = product.stock;
-          } else {
-            newItems[existingIndex].quantity = updatedQty;
+        if (existing) {
+          const newQty = existing.quantity + qty;
+          if (newQty > product.stock) {
+            return false; // Not enough stock
           }
+          set({
+            cart: cart.map((item) =>
+              item.product.id === product.id || item.product._id === product.id
+                ? { ...item, quantity: newQty }
+                : item
+            ),
+          });
         } else {
-          newItems = [
-            ...cart.items,
-            {
-              productId: product.id || product._id,
-              sku: product.sku,
-              name: product.name,
-              category: product.category,
-              costPrice: product.costPrice,
-              sellingPrice: product.sellingPrice,
-              stock: product.stock,
-              quantity: Math.min(qty, product.stock > 0 ? product.stock : 1),
-            },
-          ];
+          if (qty > product.stock) {
+            return false; // Not enough stock
+          }
+          set({
+            cart: [
+              ...cart,
+              {
+                product,
+                quantity: qty,
+                customPrice: product.sellingPrice,
+              },
+            ],
+          });
         }
-
-        set({ cart: { ...cart, items: newItems } });
+        return true;
       },
 
-      updateCartQty: (productId, newQty) => {
-        const cart = get().cart;
-        const num = Math.max(1, Number(newQty) || 1);
-        const newItems = cart.items.map((item) => {
-          if (item.productId === productId) {
-            return {
-              ...item,
-              quantity: item.stock > 0 ? Math.min(num, item.stock) : num,
-            };
-          }
-          return item;
-        });
+      updateCartQuantity: (productId, quantity) => {
+        const { cart } = get();
+        if (quantity <= 0) {
+          get().removeFromCart(productId);
+          return;
+        }
 
-        set({ cart: { ...cart, items: newItems } });
+        const item = cart.find((i) => i.product.id === productId || i.product._id === productId);
+        if (item && quantity > item.product.stock) {
+          quantity = item.product.stock;
+        }
+
+        set({
+          cart: cart.map((i) =>
+            i.product.id === productId || i.product._id === productId ? { ...i, quantity } : i
+          ),
+        });
       },
 
       removeFromCart: (productId) => {
-        const cart = get().cart;
         set({
-          cart: {
-            ...cart,
-            items: cart.items.filter((i) => i.productId !== productId),
-          },
+          cart: get().cart.filter((i) => i.product.id !== productId && i.product._id !== productId),
         });
       },
 
       clearCart: () => {
         set({
-          cart: {
-            items: [],
-            paymentMethod: 'cash',
-            paidAmount: 0,
-            customerId: null,
-            customerName: 'Walk-in Customer',
-            customerPhone: '',
-            notes: '',
-          },
+          cart: [],
+          selectedCustomer: null,
+          paymentMethod: 'cash',
+          paidAmount: 0,
+          discountAmount: 0,
+          activeTaxRate: 0,
         });
       },
 
-      setCartPaymentMethod: (method) => {
-        set((state) => ({
-          cart: { ...state.cart, paymentMethod: method },
-        }));
-      },
+      setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
+      setPaymentMethod: (method) => set({ paymentMethod: method }),
+      setPaidAmount: (amount) => set({ paidAmount: Math.max(0, Number(amount) || 0) }),
+      setDiscountAmount: (discount) => set({ discountAmount: Math.max(0, Number(discount) || 0) }),
+      setActiveTaxRate: (rate) => set({ activeTaxRate: Number(rate) || 0 }),
 
-      setCartCustomer: (customerId, name, phone) => {
-        set((state) => ({
-          cart: {
-            ...state.cart,
-            customerId,
-            customerName: name || 'Walk-in Customer',
-            customerPhone: phone || '',
-          },
-        }));
-      },
-
-      setCartNotes: (notes) => {
-        set((state) => ({
-          cart: { ...state.cart, notes },
-        }));
-      },
-
-      // Complete Checkout
-      completeCheckout: async () => {
-        const { cart, sales } = get();
-        if (!cart.items || cart.items.length === 0) return null;
-
-        let totalAmount = 0;
+      // Financial Calculation Helper
+      getCartTotals: () => {
+        const { cart, discountAmount, activeTaxRate } = get();
+        let subtotal = 0;
         let totalCost = 0;
-        let totalQuantity = 0;
-        const processedItems = [];
 
-        cart.items.forEach((item) => {
-          const qty = Number(item.quantity) || 1;
-          const cost = Number(item.costPrice) || 0;
-          const sell = Number(item.sellingPrice) || 0;
-          const lineProfit = (sell - cost) * qty;
+        cart.forEach((item) => {
+          const sell = Number(item.customPrice ?? item.product.sellingPrice) || 0;
+          const cost = Number(item.product.costPrice) || 0;
+          const qty = Number(item.quantity) || 0;
 
-          totalAmount += sell * qty;
+          subtotal += sell * qty;
           totalCost += cost * qty;
-          totalQuantity += qty;
-
-          processedItems.push({
-            productId: item.productId,
-            sku: item.sku,
-            name: item.name,
-            quantity: qty,
-            costPrice: cost,
-            sellingPrice: sell,
-            profit: lineProfit,
-          });
-
-          // Decrement Inventory Stock in real-time
-          useInventoryStore.getState().adjustStock(item.productId, -qty);
         });
 
-        const netProfit = totalAmount - totalCost;
-        const isUdhaar = cart.paymentMethod === 'udhaar';
-        const paidAmount = isUdhaar ? 0 : totalAmount;
-        const pendingAmount = isUdhaar ? totalAmount : 0;
+        // Round intermediate currency to 2 decimal places
+        subtotal = Math.round(Math.max(0, subtotal - discountAmount) * 100) / 100;
+        totalCost = Math.round(totalCost * 100) / 100;
 
-        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const rand = Math.floor(1000 + Math.random() * 9000);
-        const invoiceNo = `INV-${dateStr}-${rand}`;
+        const taxAmount = Math.round(((subtotal * activeTaxRate) / 100) * 100) / 100;
+        const grandTotal = Math.round((subtotal + taxAmount) * 100) / 100;
+        const netProfit = Math.round((subtotal - totalCost) * 100) / 100;
+        const marginPercentage = subtotal > 0 ? Math.round((netProfit / subtotal) * 1000) / 10 : 0;
 
-        const newSale = {
-          id: `sale_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          invoiceNo,
-          items: processedItems,
-          totalQuantity,
+        return {
+          subtotal,
           totalCost,
-          totalAmount,
+          taxRate: activeTaxRate,
+          taxAmount,
+          grandTotal,
           netProfit,
-          paymentMethod: cart.paymentMethod,
-          paidAmount,
-          pendingAmount,
-          customerId: cart.customerId,
-          customerName: cart.customerName,
-          customerPhone: cart.customerPhone,
-          notes: cart.notes,
-          createdAt: new Date().toISOString(),
+          marginPercentage,
+          totalItems: cart.reduce((acc, item) => acc + item.quantity, 0),
         };
+      },
 
-        // If Udhaar, record in customer store
-        if (isUdhaar && (cart.customerId || cart.customerPhone)) {
-          let custId = cart.customerId;
-          if (!custId && cart.customerPhone) {
-            // Auto create customer if doesn't exist
-            const existing = useCustomerStore.getState().customers.find(c => c.phone === cart.customerPhone);
-            if (existing) {
-              custId = existing.id;
-            } else {
-              const created = await useCustomerStore.getState().addCustomer({
-                name: cart.customerName || 'Valued Customer',
-                phone: cart.customerPhone,
-                totalCredit: totalAmount,
-                totalPaid: 0,
-              });
-              custId = created.id;
-            }
-          }
+      // Complete Checkout with full GST & Stock Integrity
+      completeCheckout: async (metadata = {}) => {
+        const { cart, selectedCustomer, paymentMethod, paidAmount, discountAmount } = get();
+        if (cart.length === 0) return null;
 
-          if (custId) {
-            useCustomerStore.getState().addCreditToCustomer(custId, totalAmount, invoiceNo);
+        const totals = get().getCartTotals();
+        const taxRate = metadata.taxRate !== undefined ? Number(metadata.taxRate) : totals.taxRate;
+        const taxAmount = metadata.taxAmount !== undefined ? Number(metadata.taxAmount) : totals.taxAmount;
+        const grandTotal = totals.subtotal + taxAmount;
+
+        // Verify stock sufficiency for all items
+        const inventoryState = useInventoryStore.getState();
+        for (const item of cart) {
+          const p = inventoryState.getProduct(item.product.id || item.product._id);
+          if (p && p.stock < item.quantity) {
+            throw new Error(`Insufficient stock for "${p.name}". Only ${p.stock} available.`);
           }
         }
 
-        // Save Sale
-        set({
-          sales: [newSale, ...sales],
-          lastCompletedSale: newSale,
+        const saleItems = cart.map((item) => {
+          const sellPrice = Number(item.customPrice ?? item.product.sellingPrice) || 0;
+          const costPrice = Number(item.product.costPrice) || 0;
+          const itemProfit = Math.round((sellPrice - costPrice) * item.quantity * 100) / 100;
+
+          return {
+            productId: item.product.id || item.product._id,
+            name: item.product.name,
+            sku: item.product.sku,
+            quantity: item.quantity,
+            costPrice,
+            sellingPrice: sellPrice,
+            itemProfit,
+          };
         });
 
-        // Reset cart
-        get().clearCart();
+        const invoiceId = `INV-${Date.now().toString().slice(-6)}`;
+        const saleRecordId = `sale_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
-        // Sync with API in background
+        // Determine paid and balance breakdown
+        let finalPaid = Number(paidAmount);
+        let dueAmount = 0;
+
+        if (paymentMethod === 'udhaar') {
+          dueAmount = Math.max(0, grandTotal - finalPaid);
+        } else {
+          finalPaid = grandTotal;
+          dueAmount = 0;
+        }
+
+        const newSale = {
+          id: saleRecordId,
+          _id: saleRecordId,
+          invoiceNo: invoiceId,
+          invoiceNumber: invoiceId,
+          items: saleItems,
+          subtotal: totals.subtotal,
+          taxRate,
+          taxAmount,
+          totalAmount: grandTotal,
+          totalCost: totals.totalCost,
+          netProfit: totals.netProfit,
+          profitMargin: totals.marginPercentage,
+          discount: discountAmount,
+          paymentMethod,
+          paidAmount: finalPaid,
+          dueAmount,
+          customerId: selectedCustomer?.id || selectedCustomer?._id || (paymentMethod === 'udhaar' ? 'guest_debtor' : 'walkin_customer'),
+          customerName: selectedCustomer?.name || (paymentMethod === 'udhaar' ? 'Udhaar Customer' : 'Walk-in Guest'),
+          customerPhone: selectedCustomer?.phone || '',
+          createdAt: new Date().toISOString(),
+        };
+
+        // 1. Decrement inventory stock safely
+        cart.forEach((item) => {
+          useInventoryStore.getState().adjustStock(item.product.id || item.product._id, -item.quantity);
+        });
+
+        // 2. If Udhaar, record customer credit transaction
+        if (paymentMethod === 'udhaar' && selectedCustomer) {
+          const custId = selectedCustomer.id || selectedCustomer._id;
+          useCustomerStore.getState().addTransaction(custId, {
+            type: 'sale',
+            amount: grandTotal,
+            paid: finalPaid,
+            description: `POS Invoice #${invoiceId}`,
+            invoiceId,
+          });
+        }
+
+        // 3. Save sale locally
+        set((state) => ({
+          sales: [newSale, ...state.sales],
+          lastCompletedSale: newSale,
+        }));
+
+        // 4. Fire remote API call asynchronously
         apiService.createSale(newSale).catch(() => {});
+
+        // 5. Clear cart
+        get().clearCart();
 
         return newSale;
       },
-
-      importSales: (salesList) => {
-        if (!Array.isArray(salesList)) return;
-        set({ sales: salesList });
-      },
-
-      // Selectors
-      getFilteredSales: () => {
-        const { sales, periodFilter } = get();
-        return filterByPeriod(sales, periodFilter);
-      },
-
-      getPeriodMetrics: () => {
-        const filtered = get().getFilteredSales();
-        const totalSales = filtered.reduce((acc, s) => acc + (Number(s.totalAmount) || 0), 0);
-        const totalCost = filtered.reduce((acc, s) => acc + (Number(s.totalCost) || 0), 0);
-        const netProfit = totalSales - totalCost;
-        const marginPercentage = totalSales > 0 ? Number(((netProfit / totalSales) * 100).toFixed(1)) : 0;
-        const totalOrders = filtered.length;
-        const avgOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
-
-        return {
-          totalSales,
-          totalCost,
-          netProfit,
-          marginPercentage,
-          totalOrders,
-          avgOrderValue,
-        };
-      },
-
-      getCartTotals: () => {
-        const items = get().cart.items || [];
-        const totalAmount = items.reduce((acc, i) => acc + (i.sellingPrice * i.quantity), 0);
-        const totalCost = items.reduce((acc, i) => acc + (i.costPrice * i.quantity), 0);
-        const estimatedProfit = totalAmount - totalCost;
-        const totalItems = items.reduce((acc, i) => acc + i.quantity, 0);
-
-        return { totalAmount, totalCost, estimatedProfit, totalItems };
-      }
     }),
     {
-      name: 'smartshop-sales-storage',
+      name: 'smartshop-sales-store',
+      partialize: (state) => ({
+        sales: state.sales,
+      }),
     }
   )
 );

@@ -13,5 +13,18 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'ui-vendor': ['framer-motion', 'lucide-react', 'canvas-confetti'],
+          'chart-vendor': ['recharts'],
+          'state-vendor': ['zustand', 'axios'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 900,
   }
 });

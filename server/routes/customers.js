@@ -5,6 +5,10 @@ import { getDBStatus } from '../config/db.js';
 
 const router = express.Router();
 
+const escapeRegex = (string) => {
+  return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Get all customers with search and debt filters
 router.get('/', async (req, res) => {
   try {
@@ -14,10 +18,11 @@ router.get('/', async (req, res) => {
     const { search, filter } = req.query;
     let query = {};
 
-    if (search) {
+    if (search && search.trim()) {
+      const sanitized = escapeRegex(search.trim());
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
+        { name: { $regex: sanitized, $options: 'i' } },
+        { phone: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -37,23 +42,32 @@ router.get('/', async (req, res) => {
 // Create new customer
 router.post('/', async (req, res) => {
   try {
-    const { name, phone, email, address } = req.body;
+    const { name, phone, email, address, initialBalance } = req.body;
+    const cleanPhone = String(phone || '').replace(/\D/g, '');
     
     // Check if phone already registered
-    const existing = await Customer.findOne({ phone: phone.trim() });
+    const existing = await Customer.findOne({ phone: cleanPhone });
     if (existing) {
       return res.status(400).json({ success: false, message: `Customer with phone ${phone} already exists.` });
     }
 
+    const initDebt = Math.max(0, Number(initialBalance) || 0);
+
     const customer = new Customer({
-      name: name.trim(),
-      phone: phone.trim(),
-      email: (email || '').trim(),
-      address: (address || '').trim(),
-      totalCredit: 0,
+      name: String(name || 'New Customer').trim(),
+      phone: cleanPhone,
+      email: String(email || '').trim(),
+      address: String(address || '').trim(),
+      totalCredit: initDebt,
       totalPaid: 0,
-      currentBalance: 0,
-      transactions: [],
+      currentBalance: initDebt,
+      transactions: initDebt > 0 ? [{
+        date: new Date(),
+        type: 'opening_balance',
+        amount: initDebt,
+        paid: 0,
+        description: 'Opening Debt Balance',
+      }] : [],
       createdAt: new Date(),
       lastActivityDate: new Date(),
     });
@@ -64,6 +78,31 @@ router.post('/', async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 });
+
+// Update existing customer details
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, phone, email, address } = req.body;
+    const updateData = {
+      lastActivityDate: new Date(),
+    };
+
+    if (name) updateData.name = String(name).trim();
+    if (phone) updateData.phone = String(phone).replace(/\D/g, '');
+    if (email !== undefined) updateData.email = String(email).trim();
+    if (address !== undefined) updateData.address = String(address).trim();
+
+    const customer = await Customer.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' });
+    }
+
+    res.json({ success: true, data: customer });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 
 // Record Payment towards Udhaar / Credit
 router.post('/:id/pay', async (req, res) => {
@@ -145,13 +184,22 @@ router.get('/:id/whatsapp-reminder', async (req, res) => {
   }
 });
 
-// Delete customer
+// Delete customer with safety check
 router.delete('/:id', async (req, res) => {
   try {
-    const customer = await Customer.findByIdAndDelete(req.params.id);
+    const customer = await Customer.findById(req.params.id);
     if (!customer) {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
+
+    if (customer.currentBalance > 0 && req.query.force !== 'true') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete customer with pending debt of ${customer.currentBalance}. Settle balance or pass ?force=true.`
+      });
+    }
+
+    await Customer.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Customer deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

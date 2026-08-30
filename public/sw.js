@@ -1,7 +1,6 @@
-const CACHE_NAME = 'smartshop-pwa-v1';
+const CACHE_NAME = 'smartshop-pwa-v2';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
 ];
 
@@ -30,10 +29,35 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
+  // 1. Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // Stale-while-revalidate strategy
+  const url = new URL(event.request.url);
+
+  // 2. Bypass Service Worker caching for backend API requests & socket connections
+  if (url.pathname.startsWith('/api') || url.protocol === 'ws:' || url.protocol === 'wss:') {
+    return;
+  }
+
+  // 3. Navigation requests (HTML) use Network-First strategy to ensure latest bundle version
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request) || caches.match('/'))
+    );
+    return;
+  }
+
+  // 4. Static assets use Cache-First / Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)

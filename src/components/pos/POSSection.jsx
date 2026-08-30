@@ -122,7 +122,10 @@ export const POSSection = () => {
       }
     }
 
-    const completedSale = await completeCheckout();
+    const completedSale = await completeCheckout({
+      taxRate,
+      taxAmount: cartTotals.taxAmount,
+    });
     if (completedSale) {
       if (soundEnabled) soundEffects.playSuccessChime();
 
@@ -135,7 +138,7 @@ export const POSSection = () => {
         });
       } catch (e) {}
 
-      showToast(`Sale #${completedSale.invoiceNo} recorded successfully!`, 'success');
+      showToast(`Sale #${completedSale.invoiceNumber || completedSale.invoiceNo} recorded successfully!`, 'success');
       openModal('receipt', completedSale);
     }
   };
@@ -462,7 +465,7 @@ export const POSSection = () => {
                 disabled={cart.items.length === 0}
                 className={`w-full py-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all ${
                   cart.items.length > 0
-                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-gray-950 shadow-glow-green hover:scale-[1.01] active:scale-[0.98]'
+                    ? 'btn-shimmer bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-gray-950 shadow-glow-green hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
               >

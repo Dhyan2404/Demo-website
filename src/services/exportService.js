@@ -14,12 +14,12 @@ const downloadFile = (content, fileName, mimeType = 'text/csv;charset=utf-8;') =
 };
 
 /**
- * Sanitizes CSV cell string to prevent CSV formula injection attacks (=, +, -, @)
+ * Enhanced Sanitizer for CSV cell strings to prevent CSV formula injection attacks (=, +, -, @, |, \t, \r)
  */
 const sanitizeCSVCell = (val) => {
   if (val === null || val === undefined) return '""';
-  let str = String(val).replace(/"/g, '""');
-  if (/^[=+\-@\t\r]/.test(str)) {
+  let str = String(val).replace(/"/g, '""').replace(/[\r\n]+/g, ' ');
+  if (/^[=+\-@|\t\r]/.test(str)) {
     str = `'${str}`;
   }
   return `"${str}"`;
@@ -37,7 +37,7 @@ export const exportInventoryToCSV = (products = []) => {
     sanitizeCSVCell(p.category || 'General'),
     Number(p.costPrice) || 0,
     Number(p.sellingPrice) || 0,
-    Number(p.sellingPrice || 0) - Number(p.costPrice || 0),
+    Math.round(((Number(p.sellingPrice) || 0) - (Number(p.costPrice) || 0)) * 100) / 100,
     `${p.sellingPrice > 0 ? (((p.sellingPrice - p.costPrice) / p.sellingPrice) * 100).toFixed(1) : 0}%`,
     Number(p.stock) || 0,
     Number(p.minThreshold) || 5,
@@ -54,22 +54,24 @@ export const exportInventoryToCSV = (products = []) => {
  * Export Sales & Profit History to CSV
  */
 export const exportSalesToCSV = (sales = []) => {
-  const headers = ['Invoice No', 'Date', 'Customer Name', 'Items Summary', 'Total Quantity', 'Total Revenue', 'Total Cost', 'Net Profit', 'Payment Method', 'Paid Amount', 'Pending (Udhaar)'];
+  const headers = ['Invoice No', 'Date', 'Customer Name', 'Items Summary', 'Subtotal', 'Tax Rate', 'Tax Amount', 'Total Revenue', 'Total Cost', 'Net Profit', 'Payment Method', 'Paid Amount', 'Pending (Udhaar)'];
 
   const rows = sales.map(s => {
     const itemsSummary = (s.items || []).map(i => `${i.name} (x${i.quantity})`).join('; ');
     return [
-      sanitizeCSVCell(s.invoiceNo),
+      sanitizeCSVCell(s.invoiceNumber || s.invoiceNo),
       sanitizeCSVCell(new Date(s.createdAt).toLocaleString()),
       sanitizeCSVCell(s.customerName || 'Walk-in'),
       sanitizeCSVCell(itemsSummary),
-      Number(s.totalQuantity) || 0,
+      Number(s.subtotal) || Number(s.totalAmount) || 0,
+      `${s.taxRate || 0}%`,
+      Number(s.taxAmount) || 0,
       Number(s.totalAmount) || 0,
       Number(s.totalCost) || 0,
       Number(s.netProfit) || 0,
       sanitizeCSVCell(s.paymentMethod),
       Number(s.paidAmount) || Number(s.totalAmount) || 0,
-      Number(s.pendingAmount) || 0
+      Number(s.dueAmount) || Number(s.pendingAmount) || 0
     ];
   });
 
@@ -132,16 +134,20 @@ export const readBackupJSONFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const raw = JSON.parse(e.target.result);
+        const raw = JSON.parse(e.target.result, (key, value) => {
+          if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+            return undefined; // Defense against Prototype Pollution
+          }
+          return value;
+        });
         
-        // Prototype pollution defense & schema verification
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
           throw new Error('Invalid JSON structure. Root must be a valid JSON object.');
         }
 
         const cleanData = {
           products: Array.isArray(raw.products) ? raw.products.filter(p => p && typeof p === 'object' && p.name) : null,
-          sales: Array.isArray(raw.sales) ? raw.sales.filter(s => s && typeof s === 'object' && s.invoiceNo) : null,
+          sales: Array.isArray(raw.sales) ? raw.sales.filter(s => s && typeof s === 'object' && (s.invoiceNumber || s.invoiceNo)) : null,
           customers: Array.isArray(raw.customers) ? raw.customers.filter(c => c && typeof c === 'object' && c.name) : null,
         };
 

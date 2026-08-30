@@ -1,20 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 import './index.css';
-
-// Register PWA Service Worker for offline performance
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <App />
   </React.StrictMode>
 );
+
+// Register PWA Service Worker in production environment using Vite native meta flag
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => {
+        console.log('SmartShop PWA ServiceWorker registered with scope: ', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('SmartShop PWA ServiceWorker registration failed: ', err);
+      });
+  });
+}

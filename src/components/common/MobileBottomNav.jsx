@@ -35,7 +35,7 @@ export const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden px-3 pb-safe pt-2 bg-gray-950/90 backdrop-blur-2xl border-t border-white/[0.1] shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden px-3 pb-safe pt-2 bg-white/90 dark:bg-gray-950/90 backdrop-blur-2xl border-t border-black/[0.06] dark:border-white/[0.1] shadow-[0_-10px_35px_rgba(0,0,0,0.08)] dark:shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
       <div className="max-w-md mx-auto flex items-center justify-around relative">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -46,16 +46,16 @@ export const MobileBottomNav = () => {
               <div key={item.id} className="relative -top-5 flex flex-col items-center">
                 <button
                   onClick={() => setActiveSection('pos')}
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all border-2 border-gray-950 shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 ${
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all border-2 border-white dark:border-gray-950 shadow-[0_0_25px_rgba(16,185,129,0.4)] active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-tr from-cyan-400 to-emerald-400 text-gray-950 scale-105 ring-2 ring-emerald-400'
-                      : 'bg-gradient-to-tr from-emerald-500 via-emerald-400 to-teal-300 text-gray-950'
+                      ? 'bg-gradient-to-tr from-cyan-500 to-emerald-500 text-white scale-105 ring-2 ring-emerald-400'
+                      : 'bg-gradient-to-tr from-emerald-500 via-emerald-400 to-teal-400 text-white dark:text-gray-950'
                   }`}
                   aria-label="Express POS Billing"
                 >
-                  <Plus className="w-7 h-7 text-gray-950 stroke-[3]" />
+                  <Plus className="w-7 h-7 text-white dark:text-gray-950 stroke-[3]" />
                 </button>
-                <span className="text-[10px] font-bold text-emerald-400 mt-1 uppercase tracking-tight">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-tight">
                   + POS
                 </span>
               </div>
@@ -68,21 +68,21 @@ export const MobileBottomNav = () => {
               onClick={() => setActiveSection(item.id)}
               className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
                 isActive
-                  ? 'text-emerald-400 font-bold scale-105'
-                  : 'text-gray-400 hover:text-gray-200'
+                  ? 'text-emerald-600 dark:text-emerald-400 font-bold scale-105'
+                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-400 stroke-[2.5]' : 'text-gray-400'}`} />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400 stroke-[2.5]' : 'text-slate-400 dark:text-gray-400'}`} />
                 {item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 bg-amber-500 text-gray-950 rounded-full text-[9px] font-black flex items-center justify-center ring-1 ring-gray-950">
+                  <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 bg-amber-500 text-white dark:text-gray-950 rounded-full text-[9px] font-black flex items-center justify-center ring-1 ring-white dark:ring-gray-950">
                     {item.badge}
                   </span>
                 )}
               </div>
               <span className="text-[10px] mt-1 tracking-tight">{item.label}</span>
               {isActive && (
-                <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5 shadow-[0_0_8px_rgba(34,197,94,1)]" />
+                <span className="w-1 h-1 rounded-full bg-emerald-500 dark:bg-emerald-400 mt-0.5 shadow-[0_0_8px_rgba(34,197,94,1)]" />
               )}
             </button>
           );

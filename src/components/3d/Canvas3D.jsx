@@ -46,11 +46,29 @@ function CameraController() {
   return null;
 }
 
-const AmbientCSSBackground = () => (
+/**
+ * Ultra-Smooth Dynamic 2D Ambient Gradient Mesh Background
+ * Features floating animated orbs with 0% CPU/GPU overhead!
+ */
+const AmbientCSSBackground = ({ isDarkMode }) => (
   <div className="canvas-bg-container overflow-hidden pointer-events-none">
-    <div className="absolute -top-[15%] left-[10%] w-[500px] h-[500px] rounded-full bg-emerald-500/[0.08] blur-[120px] animate-pulse-slow pointer-events-none" />
-    <div className="absolute top-[35%] right-[5%] w-[450px] h-[450px] rounded-full bg-cyan-500/[0.07] blur-[130px] animate-pulse pointer-events-none" />
-    <div className="absolute bottom-[10%] left-[20%] w-[550px] h-[550px] rounded-full bg-emerald-600/[0.06] blur-[140px] pointer-events-none" />
+    {isDarkMode ? (
+      <>
+        {/* Obsidian Dark Mode Animated Aurora Glows */}
+        <div className="absolute -top-[15%] left-[8%] w-[550px] h-[550px] rounded-full bg-emerald-500/[0.12] blur-[130px] animate-float pointer-events-none" />
+        <div className="absolute top-[30%] right-[3%] w-[500px] h-[500px] rounded-full bg-cyan-500/[0.10] blur-[140px] animate-float-reverse pointer-events-none" />
+        <div className="absolute bottom-[8%] left-[18%] w-[600px] h-[600px] rounded-full bg-emerald-600/[0.08] blur-[150px] animate-pulse-subtle pointer-events-none" />
+        <div className="absolute top-[60%] left-[45%] w-[400px] h-[400px] rounded-full bg-teal-500/[0.07] blur-[120px] animate-float pointer-events-none" />
+      </>
+    ) : (
+      <>
+        {/* Luxury Pearl, Champagne Gold & Emerald Glow for Light Mode */}
+        <div className="absolute -top-[15%] left-[8%] w-[550px] h-[550px] rounded-full bg-emerald-500/[0.16] blur-[130px] animate-float pointer-events-none" />
+        <div className="absolute top-[25%] right-[3%] w-[500px] h-[500px] rounded-full bg-amber-400/[0.14] blur-[140px] animate-float-reverse pointer-events-none" />
+        <div className="absolute bottom-[8%] left-[18%] w-[600px] h-[600px] rounded-full bg-sky-400/[0.12] blur-[150px] animate-pulse-subtle pointer-events-none" />
+        <div className="absolute top-[55%] left-[45%] w-[400px] h-[400px] rounded-full bg-emerald-400/[0.10] blur-[120px] animate-float pointer-events-none" />
+      </>
+    )}
   </div>
 );
 
@@ -58,9 +76,13 @@ export const Canvas3D = () => {
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const [hasWebGL, setHasWebGL] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     try {
+      const mobile = window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       if (!gl) {
@@ -71,12 +93,13 @@ export const Canvas3D = () => {
     }
   }, []);
 
-  if (fidelity3D === 'off' || !hasWebGL) {
-    return <AmbientCSSBackground />;
+  // On mobile phone screens, default to 2D CSS background unless explicitly forced by desktop
+  if (fidelity3D === 'off' || !hasWebGL || isMobile) {
+    return <AmbientCSSBackground isDarkMode={isDarkMode} />;
   }
 
   return (
-    <ErrorBoundary fallback={<AmbientCSSBackground />}>
+    <ErrorBoundary fallback={<AmbientCSSBackground isDarkMode={isDarkMode} />}>
       <div className="canvas-bg-container pointer-events-none">
         <Canvas
           camera={{ position: [0, 1.2, 5.5], fov: 45 }}
@@ -89,10 +112,10 @@ export const Canvas3D = () => {
           <CameraController />
           
           {/* Ambient & Directional Lights */}
-          <ambientLight intensity={isDarkMode ? 0.8 : 1.1} />
-          <pointLight position={[10, 10, 10]} intensity={1.5} color="#22c55e" />
-          <pointLight position={[-10, -10, -5]} intensity={1.2} color="#06b6d4" />
-          <directionalLight position={[0, 5, 5]} intensity={0.9} color="#ffffff" />
+          <ambientLight intensity={isDarkMode ? 0.8 : 1.2} />
+          <pointLight position={[10, 10, 10]} intensity={1.5} color={isDarkMode ? '#22c55e' : '#10b981'} />
+          <pointLight position={[-10, -10, -5]} intensity={1.2} color={isDarkMode ? '#06b6d4' : '#0284c7'} />
+          <directionalLight position={[0, 5, 5]} intensity={1.0} color="#ffffff" />
 
           {/* Floating 3D Cyber Objects */}
           <FloatingInventoryScene />
@@ -100,18 +123,18 @@ export const Canvas3D = () => {
           {/* Ambient background sparkles */}
           {fidelity3D === 'high' && (
             <Sparkles
-              count={50}
+              count={45}
               scale={12}
               size={2.5}
-              speed={0.4}
-              opacity={isDarkMode ? 0.35 : 0.2}
-              color="#22c55e"
+              speed={0.3}
+              opacity={isDarkMode ? 0.35 : 0.25}
+              color={isDarkMode ? '#22c55e' : '#10b981'}
             />
           )}
         </Canvas>
       </div>
-      {/* Background glow orbs behind canvas */}
-      <AmbientCSSBackground />
+      {/* Dynamic Animated Ambient Background */}
+      <AmbientCSSBackground isDarkMode={isDarkMode} />
     </ErrorBoundary>
   );
 };

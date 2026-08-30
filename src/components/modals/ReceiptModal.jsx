@@ -16,13 +16,14 @@ export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
   };
 
   const isUdhaar = sale.paymentMethod === 'udhaar';
+  const invoiceNum = sale.invoiceNumber || sale.invoiceNo || 'INV-001';
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Sales Receipt • ${sale.invoiceNo}`}
-      subtitle="Ready to print thermal slip or download copy"
+      title={`Sales Receipt • #${invoiceNum}`}
+      subtitle="Ready to print thermal slip or download digital invoice"
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
@@ -40,7 +41,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
               Smart Retail & Inventory Management
             </p>
             <div className="text-[10px] text-gray-600 mt-1 font-mono">
-              Invoice #{sale.invoiceNo}
+              Invoice #{invoiceNum}
             </div>
             <div className="text-[10px] text-gray-500">{formatDateTime(sale.createdAt)}</div>
           </div>
@@ -72,18 +73,27 @@ export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
                   </p>
                 </div>
                 <span className="font-bold text-gray-900 shrink-0">
-                  {formatCurrency(item.sellingPrice * item.quantity, currency)}
+                  {formatCurrency((Number(item.sellingPrice) || 0) * (Number(item.quantity) || 1), currency)}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* Grand Totals */}
+          {/* Subtotal, Tax & Grand Totals */}
           <div className="space-y-1 text-xs">
-            <div className="flex justify-between text-gray-600">
-              <span>Total Items:</span>
-              <span>{sale.totalQuantity}</span>
-            </div>
+            {sale.subtotal !== undefined && sale.taxRate > 0 && (
+              <>
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal:</span>
+                  <span>{formatCurrency(sale.subtotal, currency)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>GST ({sale.taxRate}%):</span>
+                  <span>+{formatCurrency(sale.taxAmount || 0, currency)}</span>
+                </div>
+              </>
+            )}
+
             <div className="flex justify-between text-sm font-black text-gray-950 pt-1 border-t border-gray-200 font-sans">
               <span>Grand Total:</span>
               <span>{formatCurrency(sale.totalAmount, currency)}</span>
@@ -92,15 +102,15 @@ export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
             {isUdhaar && (
               <div className="flex justify-between text-xs text-amber-700 font-bold bg-amber-50 p-2 rounded-lg border border-amber-200 mt-2">
                 <span>Recorded as Udhaar Debt:</span>
-                <span>{formatCurrency(sale.pendingAmount || sale.totalAmount, currency)}</span>
+                <span>{formatCurrency(sale.dueAmount ?? (sale.pendingAmount || sale.totalAmount), currency)}</span>
               </div>
             )}
           </div>
 
-          {/* Owner Net Profit (Visible in App, optional print note) */}
+          {/* Owner Net Profit (Visible in App, hidden on thermal slip) */}
           <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] flex items-center justify-between text-emerald-800 font-semibold no-print">
             <span>Owner Net Margin:</span>
-            <span className="font-bold">+{formatCurrency(sale.netProfit, currency)}</span>
+            <span className="font-bold">+{formatCurrency(sale.netProfit || 0, currency)}</span>
           </div>
 
           {/* Footer Note */}
@@ -113,7 +123,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale = null }) => {
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10 no-print">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl transition-all"
+            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-slate-800 dark:text-white text-xs font-semibold rounded-xl transition-all"
           >
             Done
           </button>

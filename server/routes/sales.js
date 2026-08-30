@@ -53,26 +53,39 @@ router.get('/', async (req, res) => {
 // Create new Sale / POS Checkout
 router.post('/', async (req, res) => {
   try {
-    const { items, paymentMethod, paidAmount, customerId, customerName, customerPhone, notes } = req.body;
+    const {
+      items,
+      subtotal,
+      taxRate = 0,
+      taxAmount = 0,
+      discount = 0,
+      totalAmount,
+      paymentMethod,
+      paidAmount,
+      customerId,
+      customerName,
+      customerPhone,
+      notes,
+    } = req.body;
 
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Sale items cannot be empty' });
     }
 
     let totalCost = 0;
-    let totalAmount = 0;
+    let computedSubtotal = 0;
     let totalQuantity = 0;
     const processedItems = [];
 
-    // Process each item and decrement stock
+    // Verify stock and calculate totals
     for (const item of items) {
       const qty = Number(item.quantity) || 1;
       const cost = Number(item.costPrice) || 0;
       const sell = Number(item.sellingPrice) || 0;
-      const lineProfit = (sell - cost) * qty;
+      const lineProfit = Math.round((sell - cost) * qty * 100) / 100;
 
       totalCost += cost * qty;
-      totalAmount += sell * qty;
+      computedSubtotal += sell * qty;
       totalQuantity += qty;
 
       processedItems.push({
@@ -85,7 +98,7 @@ router.post('/', async (req, res) => {
         profit: lineProfit,
       });
 
-      // Decrement inventory stock if product exists in DB
+      // Atomic stock reduction if product exists in DB
       if (item.productId && getDBStatus()) {
         await Product.findByIdAndUpdate(item.productId, {
           $inc: { stock: -qty },
@@ -94,17 +107,25 @@ router.post('/', async (req, res) => {
       }
     }
 
-    const netProfit = totalAmount - totalCost;
-    const paid = paymentMethod === 'udhaar' ? 0 : (Number(paidAmount) || totalAmount);
-    const pending = Math.max(0, totalAmount - paid);
+    const appliedTaxRate = Number(taxRate) || 0;
+    const appliedTaxAmount = Number(taxAmount) || Math.round(((computedSubtotal * appliedTaxRate) / 100) * 100) / 100;
+    const appliedDiscount = Number(discount) || 0;
+    const finalTotal = totalAmount !== undefined ? Number(totalAmount) : (computedSubtotal + appliedTaxAmount - appliedDiscount);
+    const netProfit = Math.round((computedSubtotal - totalCost) * 100) / 100;
+    const paid = paymentMethod === 'udhaar' ? (Number(paidAmount) || 0) : (Number(paidAmount) || finalTotal);
+    const pending = Math.max(0, finalTotal - paid);
     const invoiceNo = generateInvoiceNumber();
 
     const sale = new Sale({
       invoiceNo,
       items: processedItems,
       totalQuantity,
-      totalCost,
-      totalAmount,
+      totalCost: Math.round(totalCost * 100) / 100,
+      subtotal: Math.round(computedSubtotal * 100) / 100,
+      taxRate: appliedTaxRate,
+      taxAmount: appliedTaxAmount,
+      discount: appliedDiscount,
+      totalAmount: finalTotal,
       netProfit,
       paymentMethod: paymentMethod || 'cash',
       paidAmount: paid,
@@ -177,6 +198,34 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Void / Refund Sale and replenish stock
+router.post('/:id/void', async (req, res) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ success: false, message: 'Sale not found' });
+    }
+
+    // Replenish stock for all items
+    if (getDBStatus()) {
+      for (const item of sale.items) {
+        if (item.productId) {
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { stock: item.quantity },
+            $set: { updatedAt: new Date() },
+          });
+        }
+      }
+
+      await Sale.findByIdAndDelete(req.params.id);
+    }
+
+    res.json({ success: true, message: `Sale ${sale.invoiceNo} voided and inventory stock replenished.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Get single sale by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -191,3 +240,4 @@ router.get('/:id', async (req, res) => {
 });
 
 export default router;
+

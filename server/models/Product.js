@@ -58,6 +58,12 @@ const productSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for performance
+productSchema.index({ category: 1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ stock: 1, minThreshold: 1 });
+
+
 // Calculate profit margin %
 productSchema.virtual('profitPerUnit').get(function() {
   return this.sellingPrice - this.costPrice;

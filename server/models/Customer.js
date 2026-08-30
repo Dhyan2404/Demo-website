@@ -74,4 +74,10 @@ const customerSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for search and debtor queries
+customerSchema.index({ phone: 1 });
+customerSchema.index({ currentBalance: 1 });
+customerSchema.index({ createdAt: -1 });
+
 export const Customer = mongoose.models.Customer || mongoose.model('Customer', customerSchema);
+

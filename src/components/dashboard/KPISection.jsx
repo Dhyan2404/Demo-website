@@ -1,125 +1,100 @@
 import React, { useMemo } from 'react';
-import { DollarSign, ShoppingCart, TrendingUp, CreditCard } from 'lucide-react';
+import {
+  DollarSign,
+  TrendingUp,
+  CreditCard,
+  ShoppingBag,
+  Package,
+  ArrowUpRight,
+  AlertTriangle,
+} from 'lucide-react';
 import { StatCard } from '../common/StatCard.jsx';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
+import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
-import { filterByPeriod } from '../../utils/calculations.js';
+import { useScrollStore } from '../../store/useScrollStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const KPISection = () => {
   const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
-  const sales = useSalesStore((state) => state.sales);
-  const periodFilter = useSalesStore((state) => state.periodFilter);
-  const setPeriodFilter = useSalesStore((state) => state.setPeriodFilter);
-  const customers = useCustomerStore((state) => state.customers);
+  const setActiveSection = useScrollStore((state) => state.setActiveSection);
 
-  const totalUdhaar = useMemo(() => {
-    return customers.reduce((acc, c) => acc + (Number(c.currentBalance) || 0), 0);
+  const sales = useSalesStore((state) => state.sales);
+  const customers = useCustomerStore((state) => state.customers);
+  const products = useInventoryStore((state) => state.products);
+
+  // 1. Total Cumulative Sales & Net Profit
+  const { totalRevenue, totalNetProfit, overallMargin } = useMemo(() => {
+    const rev = (sales || []).reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
+    const cost = (sales || []).reduce((sum, s) => sum + (Number(s.totalCost) || 0), 0);
+    const profit = rev - cost;
+    const margin = rev > 0 ? (profit / rev) * 100 : 0;
+    return { totalRevenue: rev, totalNetProfit: profit, overallMargin: margin };
+  }, [sales]);
+
+  // 2. Pending Udhaar / Market Debt
+  const { totalMarketDebt, debtorsCount } = useMemo(() => {
+    const debtors = (customers || []).filter((c) => (Number(c.currentBalance) || 0) > 0);
+    const debt = debtors.reduce((sum, c) => sum + (Number(c.currentBalance) || 0), 0);
+    return { totalMarketDebt: debt, debtorsCount: debtors.length };
   }, [customers]);
 
-  const metrics = useMemo(() => {
-    const filtered = filterByPeriod(sales, periodFilter);
-    const totalSales = filtered.reduce((acc, s) => acc + (Number(s.totalAmount) || 0), 0);
-    const totalCost = filtered.reduce((acc, s) => acc + (Number(s.totalCost) || 0), 0);
-    const netProfit = totalSales - totalCost;
-    const marginPercentage = totalSales > 0 ? Number(((netProfit / totalSales) * 100).toFixed(1)) : 0;
-    const totalOrders = filtered.length;
-    const avgOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
-
-    return {
-      totalSales,
-      totalCost,
-      netProfit,
-      marginPercentage,
-      totalOrders,
-      avgOrderValue,
-    };
-  }, [sales, periodFilter]);
-
-  const periodLabels = {
-    'today': 'Today',
-    '7days': 'Last 7 Days',
-    '30days': 'Last 30 Days',
-    '1year': 'This Year',
-    'all': 'All Time',
-  };
+  // 3. Inventory Asset Value
+  const { totalInventoryValue, totalUnits } = useMemo(() => {
+    const value = (products || []).reduce(
+      (sum, p) => sum + (Number(p.costPrice) || 0) * Math.max(0, Number(p.stock) || 0),
+      0
+    );
+    const units = (products || []).reduce((sum, p) => sum + Math.max(0, Number(p.stock) || 0), 0);
+    return { totalInventoryValue: value, totalUnits: units };
+  }, [products]);
 
   return (
-    <div className="space-y-4">
-      {/* Time filter bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">Business Financial Overview</h3>
-          <p className="text-xs text-gray-400">Filter sales & net profit across different time periods</p>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* 1. Total Net Profit */}
+      <StatCard
+        title="Total Net Profit"
+        formattedValue={formatCurrency(totalNetProfit, currency)}
+        subtitle={`${overallMargin.toFixed(1)}% Realized Margin`}
+        icon={TrendingUp}
+        color="green"
+        trend={12.4}
+        trendLabel="growth"
+        onClick={() => setActiveSection('analytics')}
+      />
 
-        <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 overflow-x-auto custom-scrollbar">
-          {Object.entries(periodLabels).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setPeriodFilter(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
-                periodFilter === key
-                  ? 'bg-emerald-500 text-gray-950 shadow-sm font-bold'
-                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* 2. Total Gross Sales */}
+      <StatCard
+        title="Gross Sales (Revenue)"
+        formattedValue={formatCurrency(totalRevenue, currency)}
+        subtitle={`${sales.length} Invoices Billed`}
+        icon={DollarSign}
+        color="cyan"
+        trend={8.2}
+        trendLabel="volume"
+        onClick={() => setActiveSection('pos')}
+      />
 
-      {/* 4 Core Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Sales */}
-        <StatCard
-          title="Total Sales (Revenue)"
-          value={metrics.totalSales}
-          formattedValue={formatCurrency(metrics.totalSales, currency)}
-          subtitle={`${metrics.totalOrders} total completed orders`}
-          icon={ShoppingCart}
-          color="cyan"
-          trend={14.2}
-        />
+      {/* 3. Market Udhaar / Credit */}
+      <StatCard
+        title="Market Udhaar (Receivable)"
+        formattedValue={formatCurrency(totalMarketDebt, currency)}
+        subtitle={`${debtorsCount} Customers with Pending Debt`}
+        icon={CreditCard}
+        color={totalMarketDebt > 10000 ? 'amber' : 'rose'}
+        onClick={() => setActiveSection('udhaar')}
+      />
 
-        {/* Total Cost */}
-        <StatCard
-          title="Total Cost of Goods"
-          value={metrics.totalCost}
-          formattedValue={formatCurrency(metrics.totalCost, currency)}
-          subtitle="Inventory cost basis"
-          icon={DollarSign}
-          color="rose"
-        />
-
-        {/* Net Profit */}
-        <StatCard
-          title="Net Profit (True Margin)"
-          value={metrics.netProfit}
-          formattedValue={`+${formatCurrency(metrics.netProfit, currency)}`}
-          subtitle={`${metrics.marginPercentage}% overall net margin`}
-          icon={TrendingUp}
-          color="green"
-          trend={metrics.marginPercentage}
-          trendLabel="net margin"
-        />
-
-        {/* Total Udhaar (Credit) Pending */}
-        <StatCard
-          title="Customer Udhaar (Credit)"
-          value={totalUdhaar}
-          formattedValue={formatCurrency(totalUdhaar, currency)}
-          subtitle="Total outstanding money owed"
-          icon={CreditCard}
-          color="amber"
-          onClick={() => {
-            const el = document.getElementById('udhaar-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
-        />
-      </div>
+      {/* 4. Total Stock Asset Value */}
+      <StatCard
+        title="Stock Asset Value (Cost)"
+        formattedValue={formatCurrency(totalInventoryValue, currency)}
+        subtitle={`${totalUnits} Total Units in Store`}
+        icon={Package}
+        color="purple"
+        onClick={() => setActiveSection('inventory')}
+      />
     </div>
   );
 };

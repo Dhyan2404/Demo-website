@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB Database
+  mongodb:
+    image: mongo:6-alpine
+    container_name: smartshop-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: smart_inventory_tracker
+    networks:
+      - smartshop-net
+
+  # 2. SmartShop Backend API & Static Frontend Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartshop-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/smart_inventory_tracker
+      ALLOWED_ORIGINS: http://localhost:5000,http://localhost:5173
+    depends_on:
+      - mongodb
+    networks:
+      - smartshop-net
+
+volumes:
+  mongo_data:
+
+networks:
+  smartshop-net:
+    driver: bridge

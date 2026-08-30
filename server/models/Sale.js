@@ -47,6 +47,22 @@ const saleSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  subtotal: {
+    type: Number,
+    default: 0,
+  },
+  taxRate: {
+    type: Number,
+    default: 0,
+  },
+  taxAmount: {
+    type: Number,
+    default: 0,
+  },
+  discount: {
+    type: Number,
+    default: 0,
+  },
   totalAmount: {
     type: Number,
     required: true,
@@ -91,4 +107,10 @@ const saleSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for sales queries & timeline aggregations
+saleSchema.index({ createdAt: -1 });
+saleSchema.index({ customerId: 1 });
+saleSchema.index({ paymentMethod: 1 });
+
 export const Sale = mongoose.models.Sale || mongoose.model('Sale', saleSchema);
+

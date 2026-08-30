@@ -14,22 +14,25 @@ export const useCustomerStore = create(
       setFilterStatus: (status) => set({ filterStatus: status }),
 
       addCustomer: async (customerData) => {
-        const id = `cust_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const id = `cust_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const initDebt = Math.max(0, Number(customerData.initialBalance) || Number(customerData.totalCredit) || 0);
+
         const newCustomer = {
           id,
-          name: customerData.name.trim(),
-          phone: customerData.phone.trim(),
+          _id: id,
+          name: (customerData.name || '').trim(),
+          phone: String(customerData.phone || '').trim(),
           email: (customerData.email || '').trim(),
           address: (customerData.address || '').trim(),
-          totalCredit: Number(customerData.totalCredit) || 0,
-          totalPaid: Number(customerData.totalPaid) || 0,
-          currentBalance: Number(customerData.totalCredit || 0) - Number(customerData.totalPaid || 0),
-          transactions: customerData.initialBalance ? [
+          totalCredit: initDebt,
+          totalPaid: 0,
+          currentBalance: initDebt,
+          transactions: initDebt > 0 ? [
             {
-              id: `tx_${Date.now()}`,
+              id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
               date: new Date().toISOString(),
               type: 'credit',
-              amount: Number(customerData.initialBalance),
+              amount: initDebt,
               paymentMethod: 'udhaar',
               note: 'Opening Udhaar balance',
             }
@@ -46,12 +49,22 @@ export const useCustomerStore = create(
         return newCustomer;
       },
 
+      updateCustomer: (id, updatedFields) => {
+        set((state) => ({
+          customers: state.customers.map((c) =>
+            c.id === id || c._id === id
+              ? { ...c, ...updatedFields, lastActivityDate: new Date().toISOString() }
+              : c
+          )
+        }));
+      },
+
       recordPayment: async (customerId, amount, paymentMethod = 'cash', note = 'Payment received') => {
         const payNum = Number(amount);
         if (isNaN(payNum) || payNum <= 0) return false;
 
         const newTx = {
-          id: `tx_${Date.now()}`,
+          id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           date: new Date().toISOString(),
           type: 'payment',
           amount: payNum,
@@ -62,8 +75,8 @@ export const useCustomerStore = create(
         set((state) => ({
           customers: state.customers.map((c) => {
             if (c.id === customerId || c._id === customerId) {
-              const updatedPaid = (c.totalPaid || 0) + payNum;
-              const updatedBalance = Math.max(0, (c.currentBalance || 0) - payNum);
+              const updatedPaid = (Number(c.totalPaid) || 0) + payNum;
+              const updatedBalance = Math.max(0, (Number(c.currentBalance) || 0) - payNum);
               return {
                 ...c,
                 totalPaid: updatedPaid,
@@ -80,28 +93,31 @@ export const useCustomerStore = create(
         return true;
       },
 
-      addCreditToCustomer: (customerId, amount, invoiceNo, note = '') => {
-        const creditNum = Number(amount);
-        if (isNaN(creditNum) || creditNum <= 0) return;
+      addTransaction: (customerId, txData) => {
+        const amount = Number(txData.amount) || 0;
+        const paid = Number(txData.paid) || 0;
+        const netDebtIncrease = Math.max(0, amount - paid);
 
         const newTx = {
-          id: `tx_${Date.now()}`,
+          id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           date: new Date().toISOString(),
-          type: 'credit',
-          amount: creditNum,
-          paymentMethod: 'udhaar',
-          invoiceNo,
-          note: note || `Udhaar purchase (Invoice: ${invoiceNo})`,
+          type: txData.type || 'sale',
+          amount,
+          paid,
+          invoiceId: txData.invoiceId || '',
+          note: txData.description || `POS Sale Invoice #${txData.invoiceId || ''}`,
         };
 
         set((state) => ({
           customers: state.customers.map((c) => {
             if (c.id === customerId || c._id === customerId) {
-              const updatedCredit = (c.totalCredit || 0) + creditNum;
-              const updatedBalance = (c.currentBalance || 0) + creditNum;
+              const updatedCredit = (Number(c.totalCredit) || 0) + amount;
+              const updatedPaid = (Number(c.totalPaid) || 0) + paid;
+              const updatedBalance = (Number(c.currentBalance) || 0) + netDebtIncrease;
               return {
                 ...c,
                 totalCredit: updatedCredit,
+                totalPaid: updatedPaid,
                 currentBalance: updatedBalance,
                 transactions: [newTx, ...(c.transactions || [])],
                 lastActivityDate: new Date().toISOString(),
@@ -110,6 +126,19 @@ export const useCustomerStore = create(
             return c;
           })
         }));
+      },
+
+      addCreditToCustomer: (customerId, amount, invoiceNo, note = '') => {
+        const creditNum = Number(amount);
+        if (isNaN(creditNum) || creditNum <= 0) return;
+
+        get().addTransaction(customerId, {
+          type: 'credit',
+          amount: creditNum,
+          paid: 0,
+          invoiceId: invoiceNo,
+          description: note || `Udhaar purchase (Invoice: ${invoiceNo})`,
+        });
       },
 
       deleteCustomer: async (id) => {
@@ -127,7 +156,7 @@ export const useCustomerStore = create(
       // Selectors
       getFilteredCustomers: () => {
         const { customers, searchQuery, filterStatus } = get();
-        return customers.filter((c) => {
+        return (customers || []).filter((c) => {
           const matchesSearch = !searchQuery ||
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.phone.includes(searchQuery);
@@ -144,11 +173,11 @@ export const useCustomerStore = create(
       },
 
       getTotalUdhaarPending: () => {
-        return get().customers.reduce((acc, c) => acc + (c.currentBalance || 0), 0);
+        return (get().customers || []).reduce((acc, c) => acc + (Number(c.currentBalance) || 0), 0);
       },
 
       getCustomerById: (id) => {
-        return get().customers.find(c => c.id === id || c._id === id);
+        return (get().customers || []).find(c => c.id === id || c._id === id);
       }
     }),
     {

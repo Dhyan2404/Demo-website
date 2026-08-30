@@ -4,6 +4,11 @@ import { getDBStatus } from '../config/db.js';
 
 const router = express.Router();
 
+// Helper to escape regex special characters and prevent ReDoS attacks
+const escapeRegex = (string) => {
+  return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Get all products with search & category filters
 router.get('/', async (req, res) => {
   try {
@@ -13,11 +18,12 @@ router.get('/', async (req, res) => {
     const { search, category, stockStatus } = req.query;
     let query = {};
 
-    if (search) {
+    if (search && search.trim()) {
+      const sanitized = escapeRegex(search.trim());
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { sku: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
+        { name: { $regex: sanitized, $options: 'i' } },
+        { sku: { $regex: sanitized, $options: 'i' } },
+        { category: { $regex: sanitized, $options: 'i' } },
       ];
     }
 
@@ -53,10 +59,10 @@ router.post('/', async (req, res) => {
       sku: sku.toUpperCase(),
       name,
       category: category || 'General',
-      costPrice: Number(costPrice),
-      sellingPrice: Number(sellingPrice),
-      stock: Number(stock) || 0,
-      minThreshold: Number(minThreshold) || 5,
+      costPrice: Math.max(0, Number(costPrice) || 0),
+      sellingPrice: Math.max(0, Number(sellingPrice) || 0),
+      stock: Math.max(0, Number(stock) || 0),
+      minThreshold: Math.max(1, Number(minThreshold) || 5),
       unit: unit || 'pcs',
       notes: notes || '',
       updatedAt: new Date(),
@@ -76,10 +82,10 @@ router.put('/:id', async (req, res) => {
     const updateData = {
       name,
       category,
-      costPrice: Number(costPrice),
-      sellingPrice: Number(sellingPrice),
-      stock: Number(stock),
-      minThreshold: Number(minThreshold),
+      costPrice: Math.max(0, Number(costPrice) || 0),
+      sellingPrice: Math.max(0, Number(sellingPrice) || 0),
+      stock: Math.max(0, Number(stock) || 0),
+      minThreshold: Math.max(1, Number(minThreshold) || 5),
       unit,
       notes,
       updatedAt: new Date(),
@@ -100,24 +106,31 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Quick Stock Adjustment (+/- quantity)
+// Quick Stock Adjustment (+/- quantity) using Atomic MongoDB $inc
 router.patch('/:id/adjust-stock', async (req, res) => {
   try {
-    const { adjustment, reason } = req.body; // adjustment can be positive or negative
+    const { adjustment, reason } = req.body;
     const num = Number(adjustment);
     if (isNaN(num)) {
       return res.status(400).json({ success: false, message: 'Valid adjustment number required' });
     }
 
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      [
+        {
+          $set: {
+            stock: { $max: [0, { $add: ['$stock', num] }] },
+            updatedAt: new Date(),
+          }
+        }
+      ],
+      { new: true }
+    );
+
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
-
-    const newStock = Math.max(0, product.stock + num);
-    product.stock = newStock;
-    product.updatedAt = new Date();
-    await product.save();
 
     res.json({ success: true, data: product, message: `Stock adjusted by ${num > 0 ? '+' : ''}${num}` });
   } catch (error) {

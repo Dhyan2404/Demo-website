@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Canvas3D } from './components/3d/Canvas3D.jsx';
 import { Navbar } from './components/common/Navbar.jsx';
 import { MobileBottomNav } from './components/common/MobileBottomNav.jsx';
 import { DashboardHero } from './components/dashboard/DashboardHero.jsx';
@@ -29,7 +28,12 @@ import { NotificationToast } from './components/common/NotificationToast.jsx';
 // Stores
 import { useScrollStore } from './store/useScrollStore.js';
 import { useThemeStore } from './store/useThemeStore.js';
-import { Boxes, Sparkles, Heart } from 'lucide-react';
+import { Boxes } from 'lucide-react';
+
+// Lazy-load 3D WebGL bundle for optimal performance on mobile devices
+const Canvas3D = lazy(() =>
+  import('./components/3d/Canvas3D.jsx').then((module) => ({ default: module.Canvas3D }))
+);
 
 export function App() {
   const activeSection = useScrollStore((state) => state.activeSection || 'dashboard');
@@ -44,12 +48,19 @@ export function App() {
 
   // Track scroll position for 3D parallax
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      try {
-        const scrollY = window.scrollY || 0;
-        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-        setScrollState(scrollY, maxScroll);
-      } catch (err) {}
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          try {
+            const scrollY = window.scrollY || 0;
+            const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+            setScrollState(scrollY, maxScroll);
+          } catch (err) {}
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -67,9 +78,11 @@ export function App() {
   const currentView = (activeSection || 'dashboard').replace('-section', '');
 
   return (
-    <div className="relative min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-black font-sans pb-24 lg:pb-0">
-      {/* 3D WebGL Background Canvas with Ambient Fallback */}
-      <Canvas3D />
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-gray-950 dark:text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-white dark:selection:text-black font-sans pb-24 lg:pb-0 transition-colors duration-300">
+      {/* 3D WebGL Background Canvas (Lazy Loaded with fallback) */}
+      <Suspense fallback={<div className="canvas-bg-container pointer-events-none" />}>
+        <Canvas3D />
+      </Suspense>
 
       {/* Main UI Container */}
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -160,22 +173,22 @@ export function App() {
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 border-t border-white/[0.08] bg-gray-950/80 backdrop-blur-md py-6 px-4 sm:px-8 mt-12 text-xs text-gray-400">
+        <footer className="relative z-10 border-t border-black/[0.06] dark:border-white/[0.08] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-6 px-4 sm:px-8 mt-12 text-xs text-slate-500 dark:text-gray-400 transition-colors">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                <Boxes className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                <Boxes className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <span className="font-bold text-white">{shopName}</span>
+              <span className="font-bold text-slate-800 dark:text-white">{shopName}</span>
               <span>• Single Owner Smart Inventory & Profit Suite</span>
             </div>
 
-            <div className="flex items-center gap-4 text-gray-500">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="flex items-center gap-4 text-slate-500 dark:text-gray-500">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 Offline Storage Active
               </span>
-              <span className="text-emerald-400 font-medium">3D WebGL Active</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Auto-Optimized Graphics</span>
             </div>
           </div>
         </footer>

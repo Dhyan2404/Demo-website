@@ -174,6 +174,10 @@ export const useInventoryStore = create(
         });
       },
 
+      getProduct: (id) => {
+        return (get().products || []).find(p => p.id === id || p._id === id);
+      },
+
       getInventoryValuation: () => {
         const products = get().products;
         const totalCostValue = products.reduce((acc, p) => acc + (p.costPrice * p.stock), 0);

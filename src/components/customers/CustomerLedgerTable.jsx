@@ -228,7 +228,7 @@ export const CustomerLedgerTable = () => {
                           <>
                             {/* WhatsApp Reminder */}
                             <button
-                              onClick={() => openModal('whatsapp_reminder', c)}
+                              onClick={() => openModal('whatsapp_templates', c)}
                               className="p-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
                               title="Send WhatsApp Reminder"
                             >

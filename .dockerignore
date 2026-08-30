@@ -1,6 +1,12 @@
 node_modules
 dist
 .git
-.agents
-.github
+.gitignore
+.env
+.env.local
 *.log
+npm-debug.log*
+.DS_Store
+coverage
+.vscode
+.idea
