@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BarChart3, Download, TrendingUp, DollarSign, ShoppingBag, Target } from 'lucide-react';
 import { TopPerformersGrid } from './TopPerformersGrid.jsx';
 import { MarginBreakdownChart } from './MarginBreakdownChart.jsx';
@@ -9,8 +9,7 @@ import { exportSalesToCSV } from '../../services/exportService.js';
 
 export const ProfitAnalyticsSection = () => {
   const sales = useSalesStore((state) => state.sales);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
-  const metrics = useSalesStore((state) => state.getPeriodMetrics());
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   return (
     <section id="analytics-section" className="space-y-6 pt-4">

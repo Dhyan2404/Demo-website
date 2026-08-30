@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Boxes,
   ShoppingBag,
@@ -17,12 +17,16 @@ export const MobileBottomNav = () => {
   const scrollToSection = useScrollStore((state) => state.scrollToSection);
   const openModal = useThemeStore((state) => state.openModal);
 
-  const pendingDebtors = useCustomerStore((state) =>
-    state.customers.filter((c) => (c.currentBalance || 0) > 0).length
-  );
-  const lowStockCount = useInventoryStore((state) => state.getLowStockProducts().length);
-  const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
-  const inventoryAlerts = lowStockCount + outOfStockCount;
+  const customers = useCustomerStore((state) => state.customers);
+  const products = useInventoryStore((state) => state.products);
+
+  const pendingDebtors = useMemo(() => {
+    return (customers || []).filter((c) => (c.currentBalance || 0) > 0).length;
+  }, [customers]);
+
+  const inventoryAlerts = useMemo(() => {
+    return (products || []).filter((p) => p.stock <= (p.minThreshold || 5)).length;
+  }, [products]);
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Boxes },

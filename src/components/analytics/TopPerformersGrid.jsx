@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Crown, Flame, Trophy, Award, TrendingUp, DollarSign } from 'lucide-react';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { computeTopProducts } from '../../utils/calculations.js';
-import { formatCurrency, formatPercentage } from '../../utils/formatters.js';
+import { formatCurrency } from '../../utils/formatters.js';
 import { Interactive3DCard } from '../3d/Interactive3DCard.jsx';
 
 export const TopPerformersGrid = () => {
   const sales = useSalesStore((state) => state.sales);
   const products = useInventoryStore((state) => state.products);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
-  const { topProfitable, topSold, allPerformers } = computeTopProducts(sales, products);
+  const { topProfitable, topSold, allPerformers } = useMemo(() => {
+    return computeTopProducts(sales, products);
+  }, [sales, products]);
 
   return (
     <div className="space-y-4">

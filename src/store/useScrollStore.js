@@ -22,7 +22,10 @@ export const useScrollStore = create((set, get) => ({
 
   setScrollState: (scrollY, maxScroll) => {
     const progress = maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0;
-    set({ scrollY, scrollProgress: progress });
+    const currentProgress = get().scrollProgress;
+    if (Math.abs(progress - currentProgress) > 0.005 || Math.abs(scrollY - get().scrollY) > 15) {
+      set({ scrollY, scrollProgress: progress });
+    }
   },
 
   scrollToSection: (sectionId) => {

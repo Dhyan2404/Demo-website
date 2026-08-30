@@ -22,8 +22,12 @@ export const ProductFormModal = ({ isOpen, onClose, product = null }) => {
 
   const addProduct = useInventoryStore((state) => state.addProduct);
   const updateProduct = useInventoryStore((state) => state.updateProduct);
-  const categories = useInventoryStore((state) => state.getCategories());
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const products = useInventoryStore((state) => state.products);
+  const categories = useMemo(() => {
+    const set = new Set((products || []).map((p) => p.category || 'General'));
+    return ['All', ...Array.from(set)];
+  }, [products]);
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
   useEffect(() => {

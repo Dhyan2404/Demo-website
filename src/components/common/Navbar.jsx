@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Boxes,
   PlusCircle,
@@ -22,11 +22,13 @@ export const Navbar = () => {
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
   const openModal = useThemeStore((state) => state.openModal);
-  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
+  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
 
-  const lowStockCount = useInventoryStore((state) => state.getLowStockProducts().length);
-  const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
-  const totalAlerts = lowStockCount + outOfStockCount;
+  const products = useInventoryStore((state) => state.products);
+
+  const totalAlerts = useMemo(() => {
+    return (products || []).filter((p) => p.stock <= (p.minThreshold || 5)).length;
+  }, [products]);
 
   // Global Ctrl+K / Cmd+K shortcut
   useEffect(() => {

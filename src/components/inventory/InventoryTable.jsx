@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   Package,
   Plus,
@@ -20,7 +20,7 @@ import { formatCurrency, formatPercentage } from '../../utils/formatters.js';
 import { exportInventoryToCSV } from '../../services/exportService.js';
 
 export const InventoryTable = () => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
 
@@ -37,9 +37,56 @@ export const InventoryTable = () => {
   const adjustStock = useInventoryStore((state) => state.adjustStock);
   const deleteProduct = useInventoryStore((state) => state.deleteProduct);
 
-  const categories = useInventoryStore((state) => state.getCategories());
-  const filteredProducts = useInventoryStore((state) => state.getFilteredProducts());
-  const { totalCostValue, totalRetailValue, projectedProfit } = useInventoryStore((state) => state.getInventoryValuation());
+  const categories = useMemo(() => {
+    const set = new Set((products || []).map((p) => p.category || 'General'));
+    return ['All', ...Array.from(set)];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return (products || []).filter((product) => {
+      const matchesSearch =
+        !searchQuery ||
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+
+      let matchesStock = true;
+      if (stockFilter === 'low') {
+        matchesStock = product.stock > 0 && product.stock <= (product.minThreshold || 5);
+      } else if (stockFilter === 'out') {
+        matchesStock = product.stock <= 0;
+      } else if (stockFilter === 'in_stock') {
+        matchesStock = product.stock > 0;
+      }
+
+      return matchesSearch && matchesCategory && matchesStock;
+    }).sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (sortBy === 'profit') {
+        aVal = a.sellingPrice - a.costPrice;
+        bVal = b.sellingPrice - b.costPrice;
+      } else if (sortBy === 'margin') {
+        aVal = a.sellingPrice > 0 ? ((a.sellingPrice - a.costPrice) / a.sellingPrice) : 0;
+        bVal = b.sellingPrice > 0 ? ((b.sellingPrice - b.costPrice) / b.sellingPrice) : 0;
+      }
+
+      if (typeof aVal === 'string') {
+        return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+  }, [products, searchQuery, selectedCategory, stockFilter, sortBy, sortOrder]);
+
+  const { totalCostValue, totalRetailValue, projectedProfit } = useMemo(() => {
+    const totalCostValue = (products || []).reduce((acc, p) => acc + ((p.costPrice || 0) * (p.stock || 0)), 0);
+    const totalRetailValue = (products || []).reduce((acc, p) => acc + ((p.sellingPrice || 0) * (p.stock || 0)), 0);
+    const projectedProfit = totalRetailValue - totalCostValue;
+    return { totalCostValue, totalRetailValue, projectedProfit };
+  }, [products]);
 
   const handleDelete = (product) => {
     if (window.confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {

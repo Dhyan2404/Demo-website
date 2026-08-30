@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   Package,
   Plus,
@@ -20,11 +20,10 @@ import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { Badge } from '../common/Badge.jsx';
 import { exportInventoryToCSV } from '../../services/exportService.js';
-import { formatCurrency, formatPercentage } from '../../utils/formatters.js';
+import { formatCurrency } from '../../utils/formatters.js';
 
 export const InventorySection = () => {
   const products = useInventoryStore((state) => state.products);
-  const categories = useInventoryStore((state) => state.getCategories());
   const selectedCategory = useInventoryStore((state) => state.selectedCategory);
   const setSelectedCategory = useInventoryStore((state) => state.setSelectedCategory);
   const searchQuery = useInventoryStore((state) => state.searchQuery);
@@ -32,18 +31,76 @@ export const InventorySection = () => {
   const stockFilter = useInventoryStore((state) => state.stockFilter);
   const setStockFilter = useInventoryStore((state) => state.setStockFilter);
   const sortBy = useInventoryStore((state) => state.sortBy);
+  const sortOrder = useInventoryStore((state) => state.sortOrder);
   const setSort = useInventoryStore((state) => state.setSort);
   const adjustStock = useInventoryStore((state) => state.adjustStock);
   const deleteProduct = useInventoryStore((state) => state.deleteProduct);
-  const filteredProducts = useInventoryStore((state) => state.getFilteredProducts());
-  const valuation = useInventoryStore((state) => state.getInventoryValuation());
 
-  const lowStockCount = useInventoryStore((state) => state.getLowStockProducts().length);
-  const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
-
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
+
+  // Compute categories safely with useMemo
+  const categories = useMemo(() => {
+    const set = new Set((products || []).map((p) => p.category || 'General'));
+    return ['All', ...Array.from(set)];
+  }, [products]);
+
+  // Compute filtered & sorted products with useMemo
+  const filteredProducts = useMemo(() => {
+    return (products || []).filter((product) => {
+      const matchesSearch =
+        !searchQuery ||
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+
+      let matchesStock = true;
+      if (stockFilter === 'low') {
+        matchesStock = product.stock > 0 && product.stock <= (product.minThreshold || 5);
+      } else if (stockFilter === 'out') {
+        matchesStock = product.stock <= 0;
+      } else if (stockFilter === 'in_stock') {
+        matchesStock = product.stock > 0;
+      }
+
+      return matchesSearch && matchesCategory && matchesStock;
+    }).sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (sortBy === 'profit') {
+        aVal = a.sellingPrice - a.costPrice;
+        bVal = b.sellingPrice - b.costPrice;
+      } else if (sortBy === 'margin') {
+        aVal = a.sellingPrice > 0 ? ((a.sellingPrice - a.costPrice) / a.sellingPrice) : 0;
+        bVal = b.sellingPrice > 0 ? ((b.sellingPrice - b.costPrice) / b.sellingPrice) : 0;
+      }
+
+      if (typeof aVal === 'string') {
+        return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+  }, [products, searchQuery, selectedCategory, stockFilter, sortBy, sortOrder]);
+
+  // Compute valuation safely with useMemo
+  const valuation = useMemo(() => {
+    const totalCostValue = (products || []).reduce((acc, p) => acc + ((p.costPrice || 0) * (p.stock || 0)), 0);
+    const totalRetailValue = (products || []).reduce((acc, p) => acc + ((p.sellingPrice || 0) * (p.stock || 0)), 0);
+    const projectedProfit = totalRetailValue - totalCostValue;
+    return { totalCostValue, totalRetailValue, projectedProfit };
+  }, [products]);
+
+  const lowStockCount = useMemo(() => {
+    return (products || []).filter((p) => p.stock > 0 && p.stock <= (p.minThreshold || 5)).length;
+  }, [products]);
+
+  const outOfStockCount = useMemo(() => {
+    return (products || []).filter((p) => p.stock <= 0).length;
+  }, [products]);
 
   const handleDelete = (id, name) => {
     if (window.confirm(`Are you sure you want to delete "${name}" from inventory?`)) {

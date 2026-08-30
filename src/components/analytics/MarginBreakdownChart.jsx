@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -29,39 +29,43 @@ const PAYMENT_COLORS = {
 export const MarginBreakdownChart = () => {
   const sales = useSalesStore((state) => state.sales);
   const products = useInventoryStore((state) => state.products);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
-  const { allPerformers } = computeTopProducts(sales, products);
-  const barData = allPerformers.slice(0, 5).map(p => ({
-    name: p.name.length > 14 ? `${p.name.slice(0, 14)}...` : p.name,
-    fullName: p.name,
-    Revenue: p.totalRevenue,
-    Profit: p.totalProfit,
-  }));
+  const { barData, pieData } = useMemo(() => {
+    const { allPerformers } = computeTopProducts(sales, products);
+    const bars = (allPerformers || []).slice(0, 5).map((p) => ({
+      name: p.name.length > 14 ? `${p.name.slice(0, 14)}...` : p.name,
+      fullName: p.name,
+      Revenue: p.totalRevenue,
+      Profit: p.totalProfit,
+    }));
 
-  // Payment method breakdown
-  const paymentMap = { cash: 0, upi: 0, card: 0, udhaar: 0 };
-  sales.forEach(s => {
-    const method = s.paymentMethod || 'cash';
-    if (paymentMap[method] !== undefined) {
-      paymentMap[method] += s.totalAmount || 0;
-    } else {
-      paymentMap.cash += s.totalAmount || 0;
-    }
-  });
+    // Payment method breakdown
+    const paymentMap = { cash: 0, upi: 0, card: 0, udhaar: 0 };
+    (sales || []).forEach((s) => {
+      const method = s.paymentMethod || 'cash';
+      if (paymentMap[method] !== undefined) {
+        paymentMap[method] += Number(s.totalAmount) || 0;
+      } else {
+        paymentMap.cash += Number(s.totalAmount) || 0;
+      }
+    });
 
-  const pieData = [
-    { name: 'Cash', value: paymentMap.cash, color: PAYMENT_COLORS.cash },
-    { name: 'UPI Online', value: paymentMap.upi, color: PAYMENT_COLORS.upi },
-    { name: 'Card', value: paymentMap.card, color: PAYMENT_COLORS.card },
-    { name: 'Udhaar', value: paymentMap.udhaar, color: PAYMENT_COLORS.udhaar },
-  ].filter(d => d.value > 0);
+    const pies = [
+      { name: 'Cash', value: paymentMap.cash, color: PAYMENT_COLORS.cash },
+      { name: 'UPI Online', value: paymentMap.upi, color: PAYMENT_COLORS.upi },
+      { name: 'Card', value: paymentMap.card, color: PAYMENT_COLORS.card },
+      { name: 'Udhaar', value: paymentMap.udhaar, color: PAYMENT_COLORS.udhaar },
+    ].filter((d) => d.value > 0);
+
+    return { barData: bars, pieData: pies };
+  }, [sales, products]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       
       {/* Left 7 Cols: Top Products Revenue vs Profit Bar Chart */}
-      <div className="lg:col-span-7 glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
+      <div className="lg:col-span-7 glass-panel p-5 sm:p-6 rounded-3xl border border-white/10 space-y-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
             <BarChart3 className="w-5 h-5" />
@@ -106,7 +110,7 @@ export const MarginBreakdownChart = () => {
       </div>
 
       {/* Right 5 Cols: Payment Methods Donut Chart */}
-      <div className="lg:col-span-5 glass-panel p-5 sm:p-6 rounded-2xl border border-white/10 space-y-4">
+      <div className="lg:col-span-5 glass-panel p-5 sm:p-6 rounded-3xl border border-white/10 space-y-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
             <PieIcon className="w-5 h-5" />

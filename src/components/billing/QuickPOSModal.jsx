@@ -8,21 +8,26 @@ import { useThemeStore } from '../../store/useThemeStore.js';
 import { formatCurrency } from '../../utils/formatters.js';
 
 export const QuickPOSModal = ({ isOpen, onClose, onCheckoutSuccess }) => {
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const products = useInventoryStore((state) => state.products);
-  const categories = useInventoryStore((state) => state.getCategories());
+  const categories = React.useMemo(() => {
+    const set = new Set((products || []).map((p) => p.category || 'General'));
+    return ['All', ...Array.from(set)];
+  }, [products]);
   const addToCart = useSalesStore((state) => state.addToCart);
 
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('All');
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = selectedCat === 'All' || p.category === selectedCat;
-    return matchesSearch && matchesCat;
-  });
+  const filteredProducts = React.useMemo(() => {
+    return (products || []).filter((p) => {
+      const matchesSearch = !search ||
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.sku.toLowerCase().includes(search.toLowerCase());
+      const matchesCat = selectedCat === 'All' || p.category === selectedCat;
+      return matchesSearch && matchesCat;
+    });
+  }, [products, search, selectedCat]);
 
   return (
     <Modal

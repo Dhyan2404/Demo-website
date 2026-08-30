@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Search,
   ShoppingCart,
@@ -10,11 +10,8 @@ import {
   Banknote,
   QrCode,
   Users,
-  AlertTriangle,
-  Sparkles,
-  TrendingUp,
-  Receipt,
   LayoutGrid,
+  TrendingUp,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Modal } from '../common/Modal.jsx';
@@ -34,7 +31,6 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
   const [mobileTab, setMobileTab] = useState('catalog'); // 'catalog' | 'cart'
 
   const products = useInventoryStore((state) => state.products);
-  const categories = useInventoryStore((state) => state.getCategories());
 
   const cart = useSalesStore((state) => state.cart);
   const addToCart = useSalesStore((state) => state.addToCart);
@@ -43,24 +39,41 @@ export const QuickPOSModal = ({ isOpen, onClose }) => {
   const clearCart = useSalesStore((state) => state.clearCart);
   const setCartPaymentMethod = useSalesStore((state) => state.setCartPaymentMethod);
   const setCartCustomer = useSalesStore((state) => state.setCartCustomer);
-  const setCartNotes = useSalesStore((state) => state.setCartNotes);
   const completeCheckout = useSalesStore((state) => state.completeCheckout);
-  const cartTotals = useSalesStore((state) => state.getCartTotals());
 
   const customers = useCustomerStore((state) => state.customers);
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
   const openModal = useThemeStore((state) => state.openModal);
 
+  // Compute categories safely with useMemo
+  const categories = useMemo(() => {
+    const set = new Set((products || []).map((p) => p.category || 'General'));
+    return ['All', ...Array.from(set)];
+  }, [products]);
+
+  // Compute cartTotals with useMemo
+  const cartTotals = useMemo(() => {
+    const items = cart?.items || [];
+    const totalAmount = items.reduce((acc, i) => acc + ((Number(i.sellingPrice) || 0) * (Number(i.quantity) || 1)), 0);
+    const totalCost = items.reduce((acc, i) => acc + ((Number(i.costPrice) || 0) * (Number(i.quantity) || 1)), 0);
+    const estimatedProfit = totalAmount - totalCost;
+    const totalItems = items.reduce((acc, i) => acc + (Number(i.quantity) || 1), 0);
+
+    return { totalAmount, totalCost, estimatedProfit, totalItems };
+  }, [cart?.items]);
+
   // Filter products for quick selection
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = selectedCat === 'All' || p.category === selectedCat;
-    return matchesSearch && matchesCat;
-  });
+  const filteredProducts = useMemo(() => {
+    return (products || []).filter((p) => {
+      const matchesSearch =
+        !search ||
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.sku.toLowerCase().includes(search.toLowerCase());
+      const matchesCat = selectedCat === 'All' || p.category === selectedCat;
+      return matchesSearch && matchesCat;
+    });
+  }, [products, search, selectedCat]);
 
   const handleCheckout = async () => {
     if (!cart.items || cart.items.length === 0) {

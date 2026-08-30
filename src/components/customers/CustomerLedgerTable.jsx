@@ -30,9 +30,27 @@ export const CustomerLedgerTable = () => {
   const filterStatus = useCustomerStore((state) => state.filterStatus);
   const setFilterStatus = useCustomerStore((state) => state.setFilterStatus);
   const addCustomer = useCustomerStore((state) => state.addCustomer);
-  const deleteCustomer = useCustomerStore((state) => state.deleteCustomer);
-  const totalUdhaarPending = useCustomerStore((state) => state.getTotalUdhaarPending());
-  const filteredCustomers = useCustomerStore((state) => state.getFilteredCustomers());
+  const totalUdhaarPending = useMemo(() => {
+    return (customers || []).reduce((acc, c) => acc + (Number(c.currentBalance) || 0), 0);
+  }, [customers]);
+
+  const filteredCustomers = useMemo(() => {
+    return (customers || []).filter((c) => {
+      const matchesSearch =
+        !searchQuery ||
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.phone && c.phone.includes(searchQuery));
+
+      let matchesFilter = true;
+      if (filterStatus === 'has_debt') {
+        matchesFilter = (c.currentBalance || 0) > 0;
+      } else if (filterStatus === 'settled') {
+        matchesFilter = (c.currentBalance || 0) <= 0;
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [customers, searchQuery, filterStatus]);
 
   // Add customer modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

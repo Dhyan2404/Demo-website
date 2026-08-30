@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   CreditCard,
   Plus,
@@ -10,15 +10,12 @@ import {
   History,
   Phone,
   Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Users,
 } from 'lucide-react';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { Badge } from '../common/Badge.jsx';
 import { exportCustomersToCSV } from '../../services/exportService.js';
-import { formatCurrency, formatDateTime, formatDate } from '../../utils/formatters.js';
+import { formatCurrency, formatDateTime } from '../../utils/formatters.js';
 
 export const UdhaarSection = () => {
   const [selectedCustomerForHistory, setSelectedCustomerForHistory] = useState(null);
@@ -29,16 +26,43 @@ export const UdhaarSection = () => {
   const filterStatus = useCustomerStore((state) => state.filterStatus);
   const setFilterStatus = useCustomerStore((state) => state.setFilterStatus);
   const deleteCustomer = useCustomerStore((state) => state.deleteCustomer);
-  const filteredCustomers = useCustomerStore((state) => state.getFilteredCustomers());
-  const totalPendingUdhaar = useCustomerStore((state) => state.getTotalUdhaarPending());
 
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
-  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
+  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
 
-  const debtorsCount = customers.filter((c) => (c.currentBalance || 0) > 0).length;
-  const totalPaidAll = customers.reduce((acc, c) => acc + (c.totalPaid || 0), 0);
+  // Compute filtered customers with useMemo
+  const filteredCustomers = useMemo(() => {
+    return (customers || []).filter((c) => {
+      const matchesSearch =
+        !searchQuery ||
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.phone && c.phone.includes(searchQuery));
+
+      let matchesFilter = true;
+      if (filterStatus === 'has_debt') {
+        matchesFilter = (c.currentBalance || 0) > 0;
+      } else if (filterStatus === 'settled') {
+        matchesFilter = (c.currentBalance || 0) <= 0;
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [customers, searchQuery, filterStatus]);
+
+  // Compute total pending Udhaar with useMemo
+  const totalPendingUdhaar = useMemo(() => {
+    return (customers || []).reduce((acc, c) => acc + (Number(c.currentBalance) || 0), 0);
+  }, [customers]);
+
+  const debtorsCount = useMemo(() => {
+    return (customers || []).filter((c) => (c.currentBalance || 0) > 0).length;
+  }, [customers]);
+
+  const totalPaidAll = useMemo(() => {
+    return (customers || []).reduce((acc, c) => acc + (Number(c.totalPaid) || 0), 0);
+  }, [customers]);
 
   const handleSendWhatsAppReminder = (customer) => {
     if (!customer.phone) {

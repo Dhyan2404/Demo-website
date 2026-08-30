@@ -17,7 +17,14 @@ export const CartDrawer = ({ onCheckoutSuccess }) => {
   const setCartPaymentMethod = useSalesStore((state) => state.setCartPaymentMethod);
   const setCartCustomer = useSalesStore((state) => state.setCartCustomer);
   const completeCheckout = useSalesStore((state) => state.completeCheckout);
-  const { totalAmount, totalCost, estimatedProfit, totalItems } = useSalesStore((state) => state.getCartTotals());
+  const { totalAmount, totalCost, estimatedProfit, totalItems } = React.useMemo(() => {
+    const items = cart?.items || [];
+    const totalAmount = items.reduce((acc, i) => acc + ((Number(i.sellingPrice) || 0) * (Number(i.quantity) || 1)), 0);
+    const totalCost = items.reduce((acc, i) => acc + ((Number(i.costPrice) || 0) * (Number(i.quantity) || 1)), 0);
+    const estimatedProfit = totalAmount - totalCost;
+    const totalItems = items.reduce((acc, i) => acc + (Number(i.quantity) || 1), 0);
+    return { totalAmount, totalCost, estimatedProfit, totalItems };
+  }, [cart?.items]);
 
   const customers = useCustomerStore((state) => state.customers);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');

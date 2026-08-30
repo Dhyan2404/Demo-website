@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, ArrowUpRight, ShieldAlert, Sparkles, TrendingUp, DollarSign, ShoppingBag, Zap, Award } from 'lucide-react';
 import { useSalesStore } from '../../store/useSalesStore.js';
@@ -8,27 +8,39 @@ import { formatCurrency } from '../../utils/formatters.js';
 
 export const DashboardHero = () => {
   const openModal = useThemeStore((state) => state.openModal);
-  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
 
   const sales = useSalesStore((state) => state.sales);
-  const todaySales = sales.filter((s) => {
-    const saleDate = new Date(s.createdAt);
-    const today = new Date();
-    return (
-      saleDate.getDate() === today.getDate() &&
-      saleDate.getMonth() === today.getMonth() &&
-      saleDate.getFullYear() === today.getFullYear()
-    );
-  });
+  const products = useInventoryStore((state) => state.products);
 
-  const todayRevenue = todaySales.reduce((acc, s) => acc + (s.totalAmount || 0), 0);
-  const todayCost = todaySales.reduce((acc, s) => acc + (s.totalCost || 0), 0);
-  const todayNetProfit = todayRevenue - todayCost;
-  const todayMargin = todayRevenue > 0 ? (todayNetProfit / todayRevenue) * 100 : 0;
+  const todaySales = useMemo(() => {
+    return (sales || []).filter((s) => {
+      const saleDate = new Date(s.createdAt);
+      const today = new Date();
+      return (
+        saleDate.getDate() === today.getDate() &&
+        saleDate.getMonth() === today.getMonth() &&
+        saleDate.getFullYear() === today.getFullYear()
+      );
+    });
+  }, [sales]);
 
-  const lowStockCount = useInventoryStore((state) => state.getLowStockProducts().length);
-  const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
+  const { todayRevenue, todayCost, todayNetProfit, todayMargin } = useMemo(() => {
+    const revenue = todaySales.reduce((acc, s) => acc + (Number(s.totalAmount) || 0), 0);
+    const cost = todaySales.reduce((acc, s) => acc + (Number(s.totalCost) || 0), 0);
+    const profit = revenue - cost;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+    return { todayRevenue: revenue, todayCost: cost, todayNetProfit: profit, todayMargin: margin };
+  }, [todaySales]);
+
+  const lowStockCount = useMemo(() => {
+    return (products || []).filter((p) => p.stock > 0 && p.stock <= (p.minThreshold || 5)).length;
+  }, [products]);
+
+  const outOfStockCount = useMemo(() => {
+    return (products || []).filter((p) => p.stock <= 0).length;
+  }, [products]);
 
   return (
     <div className="relative overflow-hidden rounded-3xl glass-panel border border-white/10 p-4 sm:p-7 lg:p-8 bg-gradient-to-br from-emerald-950/40 via-gray-900/80 to-cyan-950/40 shadow-2xl">

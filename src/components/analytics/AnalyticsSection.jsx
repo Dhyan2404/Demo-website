@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -41,7 +41,6 @@ export const AnalyticsSection = () => {
   const periodFilter = useSalesStore((state) => state.periodFilter);
   const setPeriodFilter = useSalesStore((state) => state.setPeriodFilter);
   const importSales = useSalesStore((state) => state.importSales);
-  const metrics = useSalesStore((state) => state.getPeriodMetrics());
 
   const products = useInventoryStore((state) => state.products);
   const importProducts = useInventoryStore((state) => state.importProducts);
@@ -49,25 +48,29 @@ export const AnalyticsSection = () => {
   const customers = useCustomerStore((state) => state.customers);
   const importCustomers = useCustomerStore((state) => state.importCustomers);
 
-  const currency = useThemeStore((state) => state.settings.currencySymbol || '₹');
+  const currency = useThemeStore((state) => state.settings?.currencySymbol || '₹');
   const showToast = useThemeStore((state) => state.showToast);
 
-  const { topProfitable, topSold, allPerformers } = computeTopProducts(sales, products);
+  const { topProfitable, topSold } = useMemo(() => {
+    return computeTopProducts(sales, products);
+  }, [sales, products]);
 
-  // Group profit by category for bar chart
-  const categoryProfitMap = {};
-  sales.forEach((s) => {
-    (s.items || []).forEach((item) => {
-      const cat = item.category || 'General';
-      if (!categoryProfitMap[cat]) categoryProfitMap[cat] = 0;
-      categoryProfitMap[cat] += Number(item.profit) || 0;
+  // Group profit by category for bar chart safely with useMemo
+  const categoryChartData = useMemo(() => {
+    const categoryProfitMap = {};
+    (sales || []).forEach((s) => {
+      (s.items || []).forEach((item) => {
+        const cat = item.category || 'General';
+        if (!categoryProfitMap[cat]) categoryProfitMap[cat] = 0;
+        categoryProfitMap[cat] += Number(item.profit) || 0;
+      });
     });
-  });
 
-  const categoryChartData = Object.entries(categoryProfitMap).map(([name, profit]) => ({
-    name,
-    profit,
-  }));
+    return Object.entries(categoryProfitMap).map(([name, profit]) => ({
+      name,
+      profit,
+    }));
+  }, [sales]);
 
   const handleBackupExport = () => {
     exportFullBackupJSON({
