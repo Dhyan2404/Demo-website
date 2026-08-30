@@ -10,56 +10,58 @@
   }
 
   .dark {
-    --color-bg-primary: 10, 15, 29;
+    --color-bg-primary: 3, 7, 18;
     --color-surface: 17, 24, 39;
     --color-border: 31, 41, 55;
   }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Custom Glassmorphism Styles */
+/* Luxury Obsidian Glassmorphism */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(11, 17, 33, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card-hover:hover {
-  transform: translateY(-3px);
-  border-color: rgba(34, 197, 94, 0.3);
+  transform: translateY(-2px);
+  border-color: rgba(34, 197, 94, 0.35);
   box-shadow: 0 12px 30px -10px rgba(34, 197, 94, 0.25);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 15, 29, 0.95);
+  background: rgba(3, 7, 18, 0.95);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -72,8 +74,8 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -89,7 +91,7 @@
   background: rgba(34, 197, 94, 0.4);
 }
 
-/* 3D Canvas Container */
+/* 3D Canvas Background Container */
 .canvas-bg-container {
   position: fixed;
   top: 0;
@@ -100,44 +102,64 @@
   z-index: 0;
 }
 
-/* Grid overlay background */
+/* Subtle Cyber Grid Background */
 .cyber-grid {
-  background-size: 40px 40px;
+  background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
-/* Neon glow text */
+/* Neon Glow Accents */
+.shadow-glow-green {
+  box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.45);
+}
+
+.shadow-glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.45);
+}
+
+.shadow-glow-amber {
+  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.45);
+}
+
 .text-glow-green {
-  text-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+  text-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
 }
 
 .text-glow-cyan {
-  text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+  text-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
 }
 
 .text-glow-amber {
-  text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+  text-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
 }
 
-/* Print Styles for Receipts */
+/* Safe area padding for mobile notches / home indicators */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* High-Quality POS Thermal Print Stylesheet */
 @media print {
   body * {
-    visibility: hidden;
+    visibility: hidden !important;
   }
   .printable-receipt-area, .printable-receipt-area * {
-    visibility: visible;
+    visibility: visible !important;
   }
   .printable-receipt-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background: white !important;
-    color: black !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 10px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace, Courier, sans-serif !important;
+    font-size: 12px !important;
   }
   .no-print {
     display: none !important;

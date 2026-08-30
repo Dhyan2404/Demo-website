@@ -14,23 +14,35 @@ const downloadFile = (content, fileName, mimeType = 'text/csv;charset=utf-8;') =
 };
 
 /**
+ * Sanitizes CSV cell string to prevent CSV formula injection attacks (=, +, -, @)
+ */
+const sanitizeCSVCell = (val) => {
+  if (val === null || val === undefined) return '""';
+  let str = String(val).replace(/"/g, '""');
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str}"`;
+};
+
+/**
  * Export Inventory Products to CSV
  */
 export const exportInventoryToCSV = (products = []) => {
   const headers = ['SKU', 'Product Name', 'Category', 'Cost Price', 'Selling Price', 'Profit Per Unit', 'Margin %', 'Stock Level', 'Min Alert Threshold', 'Unit', 'Notes'];
   
   const rows = products.map(p => [
-    `"${p.sku}"`,
-    `"${(p.name || '').replace(/"/g, '""')}"`,
-    `"${p.category || 'General'}"`,
-    p.costPrice,
-    p.sellingPrice,
-    (p.sellingPrice - p.costPrice),
+    sanitizeCSVCell(p.sku),
+    sanitizeCSVCell(p.name),
+    sanitizeCSVCell(p.category || 'General'),
+    Number(p.costPrice) || 0,
+    Number(p.sellingPrice) || 0,
+    Number(p.sellingPrice || 0) - Number(p.costPrice || 0),
     `${p.sellingPrice > 0 ? (((p.sellingPrice - p.costPrice) / p.sellingPrice) * 100).toFixed(1) : 0}%`,
-    p.stock,
-    p.minThreshold || 5,
-    `"${p.unit || 'pcs'}"`,
-    `"${(p.notes || '').replace(/"/g, '""')}"`
+    Number(p.stock) || 0,
+    Number(p.minThreshold) || 5,
+    sanitizeCSVCell(p.unit || 'pcs'),
+    sanitizeCSVCell(p.notes || '')
   ]);
 
   const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -47,17 +59,17 @@ export const exportSalesToCSV = (sales = []) => {
   const rows = sales.map(s => {
     const itemsSummary = (s.items || []).map(i => `${i.name} (x${i.quantity})`).join('; ');
     return [
-      `"${s.invoiceNo}"`,
-      `"${new Date(s.createdAt).toLocaleString()}"`,
-      `"${(s.customerName || 'Walk-in').replace(/"/g, '""')}"`,
-      `"${itemsSummary.replace(/"/g, '""')}"`,
-      s.totalQuantity,
-      s.totalAmount,
-      s.totalCost,
-      s.netProfit,
-      `"${s.paymentMethod}"`,
-      s.paidAmount || s.totalAmount,
-      s.pendingAmount || 0
+      sanitizeCSVCell(s.invoiceNo),
+      sanitizeCSVCell(new Date(s.createdAt).toLocaleString()),
+      sanitizeCSVCell(s.customerName || 'Walk-in'),
+      sanitizeCSVCell(itemsSummary),
+      Number(s.totalQuantity) || 0,
+      Number(s.totalAmount) || 0,
+      Number(s.totalCost) || 0,
+      Number(s.netProfit) || 0,
+      sanitizeCSVCell(s.paymentMethod),
+      Number(s.paidAmount) || Number(s.totalAmount) || 0,
+      Number(s.pendingAmount) || 0
     ];
   });
 
@@ -73,15 +85,15 @@ export const exportCustomersToCSV = (customers = []) => {
   const headers = ['Customer Name', 'Phone Number', 'Email', 'Address', 'Total Credit Given', 'Total Paid Back', 'Current Pending Debt (Udhaar)', 'Total Transactions', 'Last Active Date'];
 
   const rows = customers.map(c => [
-    `"${(c.name || '').replace(/"/g, '""')}"`,
-    `"${c.phone}"`,
-    `"${c.email || ''}"`,
-    `"${(c.address || '').replace(/"/g, '""')}"`,
-    c.totalCredit || 0,
-    c.totalPaid || 0,
-    c.currentBalance || 0,
+    sanitizeCSVCell(c.name),
+    sanitizeCSVCell(c.phone),
+    sanitizeCSVCell(c.email || ''),
+    sanitizeCSVCell(c.address || ''),
+    Number(c.totalCredit) || 0,
+    Number(c.totalPaid) || 0,
+    Number(c.currentBalance) || 0,
     c.transactions?.length || 0,
-    `"${c.lastActivityDate ? new Date(c.lastActivityDate).toLocaleDateString() : 'N/A'}"`
+    sanitizeCSVCell(c.lastActivityDate ? new Date(c.lastActivityDate).toLocaleDateString() : 'N/A')
   ]);
 
   const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -90,14 +102,16 @@ export const exportCustomersToCSV = (customers = []) => {
 };
 
 /**
- * Full JSON Snapshot Backup Export
+ * Full JSON Snapshot Backup Export with Metadata
  */
 export const exportFullBackupJSON = (data = {}) => {
   const backup = {
     app: 'Personal Smart Inventory & Profit Tracker',
     version: '1.0.0',
     exportDate: new Date().toISOString(),
-    ...data
+    products: data.products || [],
+    sales: data.sales || [],
+    customers: data.customers || [],
   };
 
   const jsonStr = JSON.stringify(backup, null, 2);
@@ -106,20 +120,41 @@ export const exportFullBackupJSON = (data = {}) => {
 };
 
 /**
- * Read and parse an imported backup JSON file
+ * Secure Parser & Schema Validator for Imported JSON Backup files
  */
 export const readBackupJSONFile = (file) => {
   return new Promise((resolve, reject) => {
+    // 10MB payload size guard
+    if (file.size > 10 * 1024 * 1024) {
+      return reject(new Error('File is too large. Maximum backup file size is 10MB.'));
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const parsed = JSON.parse(e.target.result);
-        resolve(parsed);
+        const raw = JSON.parse(e.target.result);
+        
+        // Prototype pollution defense & schema verification
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+          throw new Error('Invalid JSON structure. Root must be a valid JSON object.');
+        }
+
+        const cleanData = {
+          products: Array.isArray(raw.products) ? raw.products.filter(p => p && typeof p === 'object' && p.name) : null,
+          sales: Array.isArray(raw.sales) ? raw.sales.filter(s => s && typeof s === 'object' && s.invoiceNo) : null,
+          customers: Array.isArray(raw.customers) ? raw.customers.filter(c => c && typeof c === 'object' && c.name) : null,
+        };
+
+        if (!cleanData.products && !cleanData.sales && !cleanData.customers) {
+          throw new Error('Backup file does not contain valid SmartShop products, sales, or customer data.');
+        }
+
+        resolve(cleanData);
       } catch (err) {
-        reject(new Error('Invalid JSON file format. Please upload a valid SmartShop backup.'));
+        reject(new Error(err.message || 'Invalid JSON file format. Please upload a valid SmartShop backup.'));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read file.'));
+    reader.onerror = () => reject(new Error('Failed to read backup file from filesystem.'));
     reader.readAsText(file);
   });
 };
