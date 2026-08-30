@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Settings, Sparkles, Save, RotateCcw, Download, Upload, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Sparkles, Save, RotateCcw, Download, Upload, Shield, Store, Phone, MapPin, QrCode } from 'lucide-react';
 import { Modal } from '../common/Modal.jsx';
 import { useThemeStore } from '../../store/useThemeStore.js';
 import { useInventoryStore } from '../../store/useInventoryStore.js';
 import { useSalesStore } from '../../store/useSalesStore.js';
 import { useCustomerStore } from '../../store/useCustomerStore.js';
 import { initialProducts, initialSales, initialCustomers } from '../../services/mockData.js';
-import { exportFullBackupJSON } from '../../services/exportService.js';
+import { exportFullBackupJSON, readBackupJSONFile } from '../../services/exportService.js';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
   const settings = useThemeStore((state) => state.settings);
@@ -23,16 +23,35 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   const importCustomers = useCustomerStore((state) => state.importCustomers);
 
   const [formData, setFormData] = useState({
-    shopName: settings.shopName || 'SmartShop',
-    currencySymbol: settings.currencySymbol || '₹',
-    ownerName: settings.ownerName || 'Shop Owner',
-    contactNumber: settings.contactNumber || '',
+    shopName: 'SmartShop',
+    currencySymbol: '₹',
+    ownerName: 'Shop Owner',
+    phone: '',
+    address: '',
+    upiId: '',
+    gstNumber: '',
+    lowStockDefaultThreshold: 5,
   });
+
+  useEffect(() => {
+    if (settings) {
+      setFormData({
+        shopName: settings.shopName || 'SmartShop',
+        currencySymbol: settings.currencySymbol || '₹',
+        ownerName: settings.ownerName || 'Shop Owner',
+        phone: settings.phone || settings.contactNumber || '',
+        address: settings.address || '',
+        upiId: settings.upiId || '',
+        gstNumber: settings.gstNumber || '',
+        lowStockDefaultThreshold: settings.lowStockDefaultThreshold || 5,
+      });
+    }
+  }, [settings, isOpen]);
 
   const handleSave = (e) => {
     e.preventDefault();
     updateSettings(formData);
-    showToast('Settings saved successfully!', 'success');
+    showToast('Shop settings saved successfully!', 'success');
     onClose();
   };
 
@@ -50,32 +69,84 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleRestoreFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const data = await readBackupJSONFile(file);
+      if (data.products && Array.isArray(data.products)) importProducts(data.products);
+      if (data.sales && Array.isArray(data.sales)) importSales(data.sales);
+      if (data.customers && Array.isArray(data.customers)) importCustomers(data.customers);
+      if (data.settings) updateSettings(data.settings);
+      showToast('Database snapshot restored successfully!', 'success');
+      onClose();
+    } catch (err) {
+      showToast(err.message || 'Failed to restore backup.', 'error');
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Shop & System Settings"
-      subtitle="Configure shop branding, 3D graphics fidelity, and database controls"
-      maxWidth="max-w-md"
+      subtitle="Configure shop branding, UPI payments, 3D graphics fidelity & backup snapshots"
+      maxWidth="max-w-xl"
     >
       <form onSubmit={handleSave} className="space-y-4">
-        {/* Branding */}
+        {/* Business Profile */}
         <div className="space-y-3">
           <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Business Profile
+            Business Profile & Branding
           </h4>
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300">Shop / Store Name</label>
-            <input
-              type="text"
-              required
-              value={formData.shopName}
-              onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-300">Shop / Store Name *</label>
+              <input
+                type="text"
+                required
+                value={formData.shopName}
+                onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-300">Owner Name</label>
+              <input
+                type="text"
+                value={formData.ownerName}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-300">Contact Phone (for receipts)</label>
+              <input
+                type="tel"
+                placeholder="e.g. +91 9876543210"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-300">UPI ID (for instant QR billing)</label>
+              <input
+                type="text"
+                placeholder="yourshop@upi"
+                value={formData.upiId}
+                onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-gray-300">Currency Symbol</label>
               <select
@@ -92,14 +163,37 @@ export const SettingsModal = ({ isOpen, onClose }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Owner Name</label>
+              <label className="text-xs font-semibold text-gray-300">GST / Tax Number</label>
               <input
                 type="text"
-                value={formData.ownerName}
-                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+                placeholder="e.g. 27AAAAA0000A1Z5"
+                value={formData.gstNumber}
+                onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
               />
             </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-300">Low Stock Alert Level</label>
+              <input
+                type="number"
+                min="1"
+                value={formData.lowStockDefaultThreshold}
+                onChange={(e) => setFormData({ ...formData, lowStockDefaultThreshold: Number(e.target.value) })}
+                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-300">Shop Address (Printed on receipts)</label>
+            <input
+              type="text"
+              placeholder="e.g. Shop #14, Main Market, MG Road"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+            />
           </div>
         </div>
 
@@ -136,31 +230,42 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Demo Data Reset */}
-        <div className="space-y-2 pt-2 border-t border-white/10">
-          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Database Maintenance
+        {/* Database Backup & Snapshots */}
+        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
+          <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5" />
+            <span>Database Backup & Snapshots</span>
           </h4>
-          <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-gray-400">
+            Export a full JSON snapshot of all inventory, sales, customer ledgers, and shop settings.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
               type="button"
               onClick={() => {
-                exportFullBackupJSON({ products, sales, customers });
-                showToast('Backup JSON downloaded!', 'success');
+                exportFullBackupJSON({ products, sales, customers, settings: formData });
+                showToast('Full backup JSON downloaded!', 'success');
               }}
-              className="flex-1 py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 flex items-center justify-center gap-1.5 transition-all"
+              className="flex-1 py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 flex items-center justify-center gap-1.5 transition-all"
             >
               <Download className="w-3.5 h-3.5 text-emerald-400" />
               <span>Download Backup</span>
             </button>
 
+            <label className="flex-1 py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <Upload className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Restore Backup</span>
+              <input type="file" accept=".json" onChange={handleRestoreFile} className="hidden" />
+            </label>
+
             <button
               type="button"
               onClick={handleResetSampleData}
-              className="flex-1 py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center justify-center gap-1.5 transition-all"
+              className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center justify-center gap-1.5 transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Sample Data</span>
+              <span>Reset Data</span>
             </button>
           </div>
         </div>
@@ -185,3 +290,4 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     </Modal>
   );
 };
+
