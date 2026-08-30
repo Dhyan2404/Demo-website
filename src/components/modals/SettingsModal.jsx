@@ -50,7 +50,10 @@ export const SettingsModal = ({ isOpen, onClose }) => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    updateSettings(formData);
+    updateSettings({
+      ...formData,
+      lowStockDefaultThreshold: Math.max(1, parseInt(formData.lowStockDefaultThreshold, 10) || 5),
+    });
     showToast('Shop settings saved successfully!', 'success');
     onClose();
   };
@@ -72,11 +75,12 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   const handleRestoreFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     try {
       const data = await readBackupJSONFile(file);
-      if (data.products && Array.isArray(data.products)) importProducts(data.products);
-      if (data.sales && Array.isArray(data.sales)) importSales(data.sales);
-      if (data.customers && Array.isArray(data.customers)) importCustomers(data.customers);
+      if (Array.isArray(data.products)) importProducts(data.products);
+      if (Array.isArray(data.sales)) importSales(data.sales);
+      if (Array.isArray(data.customers)) importCustomers(data.customers);
       if (data.settings) updateSettings(data.settings);
       showToast('Database snapshot restored successfully!', 'success');
       onClose();
@@ -96,63 +100,65 @@ export const SettingsModal = ({ isOpen, onClose }) => {
       <form onSubmit={handleSave} className="space-y-4">
         {/* Business Profile */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-slate-700 dark:text-gray-400 uppercase tracking-wider">
             Business Profile & Branding
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Shop / Store Name *</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Shop / Store Name *</label>
               <input
                 type="text"
                 required
                 value={formData.shopName}
                 onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-amber-500 font-medium"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Owner Name</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Owner Name</label>
               <input
                 type="text"
                 value={formData.ownerName}
                 onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-amber-500 font-medium"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Contact Phone (for receipts)</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Contact Phone (Digits only)</label>
               <input
                 type="tel"
-                placeholder="e.g. +91 9876543210"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="e.g. 9876543210"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-amber-500 font-bold"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">UPI ID (for instant QR billing)</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">UPI ID (for instant QR billing)</label>
               <input
                 type="text"
                 placeholder="yourshop@upi"
                 value={formData.upiId}
                 onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-amber-500 font-bold"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Currency Symbol</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Currency Symbol</label>
               <select
                 value={formData.currencySymbol}
                 onChange={(e) => setFormData({ ...formData, currencySymbol: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-amber-500 font-bold"
               >
                 <option value="₹">₹ (INR - Rupee)</option>
                 <option value="$">$ (USD - Dollar)</option>
@@ -163,48 +169,49 @@ export const SettingsModal = ({ isOpen, onClose }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">GST / Tax Number</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">GST / Tax Number</label>
               <input
                 type="text"
                 placeholder="e.g. 27AAAAA0000A1Z5"
                 value={formData.gstNumber}
-                onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
+                onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value.toUpperCase() })}
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-amber-500 font-bold"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-300">Low Stock Alert Level</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Low Stock Alert Level</label>
               <input
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.lowStockDefaultThreshold}
-                onChange={(e) => setFormData({ ...formData, lowStockDefaultThreshold: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-brand-500"
+                onChange={(e) => setFormData({ ...formData, lowStockDefaultThreshold: e.target.value.replace(/\D/g, '') })}
+                className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-amber-500 font-bold"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300">Shop Address (Printed on receipts)</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-gray-300">Shop Address (Printed on receipts)</label>
             <input
               type="text"
               placeholder="e.g. Shop #14, Main Market, MG Road"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-900 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-brand-500"
+              className="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-amber-500 font-medium"
             />
           </div>
         </div>
 
         {/* 3D Graphics Fidelity */}
-        <div className="space-y-2 pt-2 border-t border-white/10">
+        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-white/10">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <label className="text-xs font-bold text-slate-700 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-cyan-400" />
               <span>3D Visuals Fidelity</span>
             </label>
-            <span className="text-[10px] text-gray-500 font-mono uppercase">{fidelity3D}</span>
+            <span className="text-[10px] text-slate-500 dark:text-gray-500 font-mono uppercase">{fidelity3D}</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -217,26 +224,26 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                 key={mode.id}
                 type="button"
                 onClick={() => setFidelity3D(mode.id)}
-                className={`p-2.5 rounded-xl border text-center transition-all ${
+                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                   fidelity3D === mode.id
-                    ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-sm'
-                    : 'bg-white/[0.02] border-white/10 text-gray-400 hover:text-white'
+                    ? 'bg-amber-500/20 dark:bg-cyan-500/20 border-amber-500/60 dark:border-cyan-500/50 text-amber-900 dark:text-cyan-300 shadow-sm font-black'
+                    : 'bg-slate-100 dark:bg-white/[0.02] border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <p className="text-xs font-bold">{mode.label}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{mode.sub}</p>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-0.5">{mode.sub}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* Database Backup & Snapshots */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
-          <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-white/[0.02] border border-amber-500/20 dark:border-white/5 space-y-2.5">
+          <h4 className="text-xs font-bold text-amber-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5" />
             <span>Database Backup & Snapshots</span>
           </h4>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-slate-600 dark:text-gray-400">
             Export a full JSON snapshot of all inventory, sales, customer ledgers, and shop settings.
           </p>
 
@@ -247,14 +254,14 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                 exportFullBackupJSON({ products, sales, customers, settings: formData });
                 showToast('Full backup JSON downloaded!', 'success');
               }}
-              className="flex-1 py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 flex items-center justify-center gap-1.5 transition-all"
+              className="flex-1 py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-white/[0.04] dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-gray-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <Download className="w-3.5 h-3.5 text-amber-600 dark:text-emerald-400" />
               <span>Download Backup</span>
             </button>
 
-            <label className="flex-1 py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-              <Upload className="w-3.5 h-3.5 text-cyan-400" />
+            <label className="flex-1 py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-white/[0.04] dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-gray-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <Upload className="w-3.5 h-3.5 text-amber-600 dark:text-cyan-400" />
               <span>Restore Backup</span>
               <input type="file" accept=".json" onChange={handleRestoreFile} className="hidden" />
             </label>
@@ -262,7 +269,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={handleResetSampleData}
-              className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center justify-center gap-1.5 transition-all"
+              className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Data</span>
@@ -270,19 +277,19 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2">
+        <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl transition-all"
+            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-xs font-extrabold rounded-xl shadow-glow-green flex items-center gap-1.5 transition-all"
+            className="btn-shimmer px-5 py-2 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-black rounded-xl shadow-glow-gold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-4 h-4 text-slate-950 stroke-[2.5]" />
             <span>Save Settings</span>
           </button>
         </div>
@@ -290,4 +297,3 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     </Modal>
   );
 };
-

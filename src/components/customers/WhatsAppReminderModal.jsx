@@ -83,10 +83,10 @@ export const WhatsAppReminderModal = ({ isOpen, onClose, customer }) => {
               <button
                 key={t.id}
                 onClick={() => setSelectedTemplate(t.id)}
-                className={`py-2.5 px-2 rounded-2xl flex flex-col items-center gap-1 text-xs font-bold border transition-all ${
+                className={`py-2.5 px-2 rounded-2xl flex flex-col items-center gap-1 text-xs font-bold border transition-all cursor-pointer ${
                   active
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-glow-green'
-                    : 'bg-white/[0.03] border-white/10 text-gray-400 hover:text-white'
+                    ? 'bg-amber-500/20 dark:bg-emerald-500/20 border-amber-500/60 dark:border-emerald-500/50 text-amber-900 dark:text-emerald-300 shadow-sm font-black'
+                    : 'bg-slate-100 dark:bg-white/[0.03] border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -98,13 +98,13 @@ export const WhatsAppReminderModal = ({ isOpen, onClose, customer }) => {
 
         {/* Message Editor */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-gray-400">
-            <label className="font-bold uppercase tracking-wider text-[11px]">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-gray-400">
+            <label className="font-bold uppercase tracking-wider text-[11px] text-slate-700 dark:text-gray-300">
               WhatsApp Message Preview & Editor
             </label>
             <button
               onClick={handleCopyText}
-              className="text-emerald-400 hover:underline flex items-center gap-1 text-[11px]"
+              className="text-amber-700 dark:text-emerald-400 hover:underline flex items-center gap-1 text-[11px] font-bold cursor-pointer"
             >
               <Copy className="w-3 h-3" /> Copy Text
             </button>
@@ -114,21 +114,21 @@ export const WhatsAppReminderModal = ({ isOpen, onClose, customer }) => {
             rows={7}
             value={customText}
             onChange={(e) => setCustomText(e.target.value)}
-            className="w-full p-3.5 bg-gray-900 border border-white/15 rounded-2xl text-white text-xs leading-relaxed font-sans focus:outline-none focus:border-emerald-500 custom-scrollbar"
+            className="w-full p-3.5 bg-slate-100 dark:bg-gray-900 border border-slate-300 dark:border-white/15 rounded-2xl text-slate-900 dark:text-white text-xs leading-relaxed font-sans focus:outline-none focus:border-amber-500 custom-scrollbar"
           />
         </div>
 
         {/* Recipient info & Trigger */}
-        <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-gray-400">
-            Sending to: <strong className="text-white">{customer.name}</strong> ({customer.phone})
+        <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-xs text-slate-600 dark:text-gray-400">
+            Sending to: <strong className="text-slate-900 dark:text-white font-bold">{customer.name}</strong> ({customer.phone})
           </div>
 
           <button
             onClick={handleSendWhatsApp}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-gray-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="btn-shimmer w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
-            <Send className="w-4 h-4 text-gray-950 stroke-[3]" />
+            <Send className="w-4 h-4 text-slate-950 stroke-[3]" />
             <span>Open in WhatsApp</span>
           </button>
         </div>

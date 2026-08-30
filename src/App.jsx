@@ -1,6 +1,8 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/common/Navbar.jsx';
+import { LiveShopTicker } from './components/common/LiveShopTicker.jsx';
+import { FloatingSpeedDial } from './components/common/FloatingSpeedDial.jsx';
 import { MobileBottomNav } from './components/common/MobileBottomNav.jsx';
 import { DashboardHero } from './components/dashboard/DashboardHero.jsx';
 import { KPISection } from './components/dashboard/KPISection.jsx';
@@ -12,7 +14,11 @@ import { InventorySection } from './components/inventory/InventorySection.jsx';
 import { UdhaarSection } from './components/customers/UdhaarSection.jsx';
 import { AnalyticsSection } from './components/analytics/AnalyticsSection.jsx';
 
-// Modals & Common
+// Modals & Common Tools
+import { WelcomeIntroModal } from './components/modals/WelcomeIntroModal.jsx';
+import { ProfitSimulatorModal } from './components/modals/ProfitSimulatorModal.jsx';
+import { BarcodeGeneratorModal } from './components/modals/BarcodeGeneratorModal.jsx';
+import { ShortcutsModal } from './components/modals/ShortcutsModal.jsx';
 import { QuickPOSModal } from './components/pos/QuickPOSModal.jsx';
 import { ProductFormModal } from './components/modals/ProductFormModal.jsx';
 import { CustomerFormModal } from './components/modals/CustomerFormModal.jsx';
@@ -29,7 +35,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 // Stores
 import { useScrollStore } from './store/useScrollStore.js';
 import { useThemeStore } from './store/useThemeStore.js';
-import { Boxes } from 'lucide-react';
+import { Boxes, Sparkles } from 'lucide-react';
 
 // Lazy-load 3D WebGL bundle for optimal performance on mobile devices
 const Canvas3D = lazy(() =>
@@ -46,6 +52,37 @@ export function App() {
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
   const shopName = useThemeStore((state) => state.settings?.shopName || 'SmartShop');
+
+  // Trigger welcome animation on first visit
+  useEffect(() => {
+    try {
+      const welcomed = sessionStorage.getItem('smartshop_royal_welcomed');
+      if (!welcomed) {
+        sessionStorage.setItem('smartshop_royal_welcomed', 'true');
+        setTimeout(() => openModal('welcome_intro'), 400);
+      }
+    } catch (e) {}
+  }, [openModal]);
+
+  // Global Keyboard Hotkeys Listener (F1-F5, Ctrl+K)
+  useEffect(() => {
+    const handleHotkeys = (e) => {
+      // Don't intercept if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        openModal('shortcuts');
+      } else if (e.key === 'b' || e.key === 'B') {
+        openModal('barcode_generator');
+      } else if (e.key === 'm' || e.key === 'M') {
+        openModal('profit_simulator');
+      }
+    };
+
+    window.addEventListener('keydown', handleHotkeys);
+    return () => window.removeEventListener('keydown', handleHotkeys);
+  }, [openModal]);
 
   // Track scroll position for 3D parallax
   useEffect(() => {
@@ -79,7 +116,7 @@ export function App() {
   const currentView = (activeSection || 'dashboard').replace('-section', '');
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-gray-950 dark:text-gray-100 overflow-x-hidden cyber-grid selection:bg-emerald-500 selection:text-white dark:selection:text-black font-sans pb-24 lg:pb-0 transition-colors duration-300">
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-gray-950 dark:text-gray-100 overflow-x-hidden cyber-grid selection:bg-amber-500 selection:text-slate-950 font-sans pb-24 lg:pb-0 transition-colors duration-300">
       {/* 3D WebGL Background Canvas (Lazy Loaded with ErrorBoundary fallback) */}
       <ErrorBoundary fallback={<div className="canvas-bg-container pointer-events-none" />}>
         <Suspense fallback={<div className="canvas-bg-container pointer-events-none" />}>
@@ -91,6 +128,9 @@ export function App() {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Sticky Glass Navbar */}
         <Navbar />
+
+        {/* Live Real-Time Telemetry Marquee Bar */}
+        <LiveShopTicker />
 
         {/* Modular Dedicated View Screen */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-8 py-5 sm:py-8">
@@ -176,11 +216,11 @@ export function App() {
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 border-t border-black/[0.06] dark:border-white/[0.08] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-6 px-4 sm:px-8 mt-12 text-xs text-slate-500 dark:text-gray-400 transition-colors">
+        <footer className="relative z-10 border-t border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-6 px-4 sm:px-8 mt-12 text-xs text-slate-500 dark:text-gray-400 transition-colors">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                <Boxes className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                <Boxes className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               </div>
               <span className="font-bold text-slate-800 dark:text-white">{shopName}</span>
               <span>• Single Owner Smart Inventory & Profit Suite</span>
@@ -191,16 +231,29 @@ export function App() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 Offline Storage Active
               </span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Auto-Optimized Graphics</span>
+              <button
+                onClick={() => openModal('welcome_intro')}
+                className="text-amber-700 dark:text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Replay Welcome Intro</span>
+              </button>
             </div>
           </div>
         </footer>
       </div>
 
+      {/* Interactive Quick-Action Radial Speed Dial */}
+      <FloatingSpeedDial />
+
       {/* Floating Bottom Navigation Dock for Mobile Phones */}
       <MobileBottomNav />
 
       {/* Global Interactive Modals */}
+      <WelcomeIntroModal isOpen={activeModal === 'welcome_intro'} onClose={closeModal} />
+      <ProfitSimulatorModal isOpen={activeModal === 'profit_simulator'} onClose={closeModal} />
+      <BarcodeGeneratorModal isOpen={activeModal === 'barcode_generator'} onClose={closeModal} />
+      <ShortcutsModal isOpen={activeModal === 'shortcuts'} onClose={closeModal} />
       <QuickPOSModal isOpen={activeModal === 'pos'} onClose={closeModal} />
       <ProductFormModal isOpen={activeModal === 'product_form'} onClose={closeModal} product={modalData} />
       <CustomerFormModal isOpen={activeModal === 'customer_form'} onClose={closeModal} />

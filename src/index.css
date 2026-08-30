@@ -9,6 +9,9 @@
     --color-border: 226, 232, 240;
     --color-text-primary: 15, 23, 42;
     --color-text-secondary: 71, 85, 105;
+    --color-gold-primary: #d97706;
+    --color-gold-light: #fef3c7;
+    --color-gold-border: rgba(217, 119, 6, 0.35);
   }
 
   .dark {
@@ -27,7 +30,7 @@
   }
 }
 
-/* 🌟 Keyframe Animations for Dynamic Motion & Luxury Aesthetics */
+/* 🌟 Keyframe Animations for Dynamic Motion & Luxury Golden Aesthetics */
 @keyframes float-slow {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
@@ -52,6 +55,20 @@
   }
   100% {
     transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+@keyframes gold-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(250%) skewX(-25deg);
+    opacity: 0.3;
   }
 }
 
@@ -90,6 +107,24 @@
   }
 }
 
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Animation Utility Classes */
 .animate-float {
   animation: float-slow 6s ease-in-out infinite;
@@ -105,6 +140,14 @@
 
 .animate-pulse-subtle {
   animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2.5s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
 }
 
 /* Shimmer Button Sweep Effect */
@@ -123,40 +166,58 @@
   background: linear-gradient(
     60deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.4) 50%,
     transparent 70%
   );
   animation: shimmer-sweep 4s infinite;
   pointer-events: none;
 }
 
-/* Luxury Dynamic Flowing Border */
-.border-beam-active {
-  background-size: 200% 200%;
-  animation: border-beam 4s ease infinite;
+/* 👑 Royal Golden Touch for White / Light Mode */
+.gold-touch {
+  border-color: rgba(217, 119, 6, 0.3);
+  box-shadow: 0 4px 20px -4px rgba(217, 119, 6, 0.12);
+}
+
+.gold-touch:hover {
+  border-color: rgba(217, 119, 6, 0.55);
+  box-shadow: 0 10px 30px -4px rgba(217, 119, 6, 0.22);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-badge {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.8) 100%);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  color: #92400e;
+  font-weight: 800;
 }
 
 /* Luxury Alabaster Light & Cyber Obsidian Dark Glassmorphism */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(217, 119, 6, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .glass-panel {
-  background: rgba(11, 17, 33, 0.78);
+  background: rgba(11, 17, 33, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.55);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.85) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(254, 252, 232, 0.9) 100%);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  box-shadow: 0 4px 20px 0 rgba(217, 119, 6, 0.06);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -172,8 +233,8 @@
 
 .glass-card-hover:hover {
   transform: translateY(-4px) scale(1.01);
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 16px 36px -10px rgba(16, 185, 129, 0.22);
+  border-color: rgba(217, 119, 6, 0.5);
+  box-shadow: 0 16px 36px -10px rgba(217, 119, 6, 0.2);
 }
 
 .dark .glass-card-hover:hover {
@@ -183,8 +244,8 @@
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -196,21 +257,21 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.25);
+  background: rgba(217, 119, 6, 0.3);
   border-radius: 9999px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.6);
+  background: rgba(217, 119, 6, 0.6);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -218,7 +279,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.2);
+  background: rgba(217, 119, 6, 0.25);
   border-radius: 9999px;
 }
 
@@ -227,7 +288,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.5);
+  background: rgba(217, 119, 6, 0.5);
 }
 
 /* 3D Canvas Background Container */
@@ -241,12 +302,12 @@
   z-index: 0;
 }
 
-/* Subtle Cyber Grid Background (Light & Dark) */
+/* Subtle Cyber & Gold Grid Background (Light & Dark) */
 .cyber-grid {
   background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(217, 119, 6, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(217, 119, 6, 0.05) 1px, transparent 1px);
 }
 
 .dark .cyber-grid {
@@ -266,6 +327,10 @@
 
 .shadow-glow-amber {
   box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.45);
+}
+
+.shadow-glow-gold {
+  box-shadow: 0 0 25px -5px rgba(217, 119, 6, 0.4);
 }
 
 .dark .shadow-glow-green {
