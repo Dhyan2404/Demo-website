@@ -1,0 +1,162 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Boxes,
+  PlusCircle,
+  Search,
+  Bell,
+  Sun,
+  Moon,
+  Sparkles,
+  Settings,
+  ShoppingBag,
+  CreditCard,
+  BarChart3,
+  Package,
+} from 'lucide-react';
+import { useScrollStore } from '../../store/useScrollStore.js';
+import { useThemeStore } from '../../store/useThemeStore.js';
+import { useInventoryStore } from '../../store/useInventoryStore.js';
+
+export const Navbar = () => {
+  const activeSection = useScrollStore((state) => state.activeSection);
+  const scrollToSection = useScrollStore((state) => state.scrollToSection);
+
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const fidelity3D = useThemeStore((state) => state.fidelity3D);
+  const setFidelity3D = useThemeStore((state) => state.setFidelity3D);
+  const openModal = useThemeStore((state) => state.openModal);
+  const shopName = useThemeStore((state) => state.settings.shopName || 'SmartShop');
+
+  const lowStockCount = useInventoryStore((state) => state.getLowStockProducts().length);
+  const outOfStockCount = useInventoryStore((state) => state.getOutOfStockProducts().length);
+  const totalAlerts = lowStockCount + outOfStockCount;
+
+  // Keyboard shortcut Ctrl+K / Cmd+K for global search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openModal('quick_search');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openModal]);
+
+  const navLinks = [
+    { id: 'dashboard', label: 'Dashboard', icon: Boxes },
+    { id: 'pos-section', label: 'Quick POS', icon: ShoppingBag },
+    { id: 'inventory-section', label: 'Inventory', icon: Package },
+    { id: 'udhaar-section', label: 'Udhaar Ledger', icon: CreditCard },
+    { id: 'analytics-section', label: 'Profit Analytics', icon: BarChart3 },
+  ];
+
+  return (
+    <header className="sticky top-0 z-40 w-full px-4 sm:px-8 py-3 bg-gray-950/75 backdrop-blur-xl border-b border-white/[0.08] transition-colors">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        
+        {/* Left: Brand Identity */}
+        <div
+          onClick={() => scrollToSection('dashboard')}
+          className="flex items-center gap-3 cursor-pointer group shrink-0"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 p-0.5 shadow-glow-green group-hover:scale-105 transition-transform">
+            <div className="w-full h-full bg-gray-950 rounded-[10px] flex items-center justify-center">
+              <Boxes className="w-5 h-5 text-emerald-400 group-hover:rotate-12 transition-transform" />
+            </div>
+          </div>
+          <div className="hidden sm:block">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-white tracking-tight text-base">{shopName}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold uppercase">3D PRO</span>
+            </div>
+            <p className="text-[11px] text-gray-400 font-medium">Smart Inventory & Profit Suite</p>
+          </div>
+        </div>
+
+        {/* Center: Scroll-Spied Nav Links */}
+        <nav className="hidden lg:flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] p-1.5 rounded-2xl">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive = activeSection === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => scrollToSection(link.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                  isActive
+                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                    : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-gray-400'}`} />
+                <span>{link.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Quick Search Shortcut */}
+          <button
+            onClick={() => openModal('quick_search')}
+            className="flex items-center gap-2 px-3 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-xs text-gray-300 transition-all hover:border-white/20"
+            title="Global Search (Ctrl+K)"
+          >
+            <Search className="w-4 h-4 text-gray-400" />
+            <span className="hidden md:inline">Search...</span>
+            <kbd className="hidden md:inline text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400 font-mono">⌘K</kbd>
+          </button>
+
+          {/* Stock Alert Bell */}
+          <button
+            onClick={() => scrollToSection('inventory-section')}
+            className="relative p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
+            title={`${totalAlerts} Low / Out-of-Stock Alerts`}
+          >
+            <Bell className="w-4 h-4 text-gray-400" />
+            {totalAlerts > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-950 animate-pulse">
+                {totalAlerts}
+              </span>
+            )}
+          </button>
+
+          {/* 3D Fidelity Mode Switcher */}
+          <button
+            onClick={() => {
+              const modes = ['high', 'lite', 'off'];
+              const next = modes[(modes.indexOf(fidelity3D) + 1) % modes.length];
+              setFidelity3D(next);
+            }}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-xs text-gray-300 transition-all"
+            title={`3D Graphics Fidelity: ${fidelity3D.toUpperCase()}`}
+          >
+            <Sparkles className={`w-3.5 h-3.5 ${fidelity3D === 'high' ? 'text-cyan-400' : 'text-gray-500'}`} />
+            <span className="uppercase text-[10px] font-bold text-gray-400">{fidelity3D}</span>
+          </button>
+
+          {/* Settings Button */}
+          <button
+            onClick={() => openModal('settings')}
+            className="p-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-gray-300 transition-all"
+            title="Shop Settings & Backup"
+          >
+            <Settings className="w-4 h-4 text-gray-400" />
+          </button>
+
+          {/* Primary Quick Sale Button */}
+          <button
+            onClick={() => openModal('pos')}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-gray-950 font-bold rounded-xl text-xs shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            <PlusCircle className="w-4 h-4 text-gray-950" />
+            <span className="font-extrabold">+ New Sale</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
