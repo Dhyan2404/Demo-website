@@ -63,7 +63,7 @@ export const LiveStockAlerts = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {outOfStockProducts.map((product) => (
+            {outOfStockProducts.slice(0, 4).map((product) => (
               <div
                 key={product.id || product.sku}
                 className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-between gap-3 shadow-sm"
@@ -80,7 +80,7 @@ export const LiveStockAlerts = () => {
 
                 <button
                   onClick={() => handleRestock(product, 20)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs flex items-center gap-1.5 transition-all shrink-0 shadow-sm active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs flex items-center gap-1.5 transition-all shrink-0 shadow-sm active:scale-95 cursor-pointer"
                   aria-label={`Restock 20 units of ${product.name}`}
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -89,6 +89,16 @@ export const LiveStockAlerts = () => {
               </div>
             ))}
           </div>
+          {outOfStockProducts.length > 4 && (
+            <div className="text-right">
+              <button
+                onClick={() => setActiveSection('inventory')}
+                className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+              >
+                + {outOfStockProducts.length - 4} more out-of-stock items in inventory &rarr;
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -101,7 +111,7 @@ export const LiveStockAlerts = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {lowStockProducts.map((product) => (
+            {lowStockProducts.slice(0, 4).map((product) => (
               <div
                 key={product.id || product.sku}
                 className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 shadow-sm"
@@ -120,7 +130,7 @@ export const LiveStockAlerts = () => {
 
                 <button
                   onClick={() => handleRestock(product, 15)}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 font-black text-xs flex items-center gap-1.5 transition-all shrink-0 active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 font-black text-xs flex items-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer"
                   aria-label={`Restock 15 units of ${product.name}`}
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -129,6 +139,16 @@ export const LiveStockAlerts = () => {
               </div>
             ))}
           </div>
+          {lowStockProducts.length > 4 && (
+            <div className="text-right">
+              <button
+                onClick={() => setActiveSection('inventory')}
+                className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+              >
+                + {lowStockProducts.length - 4} more low-stock items in inventory &rarr;
+              </button>
+            </div>
+          )}
         </div>
       )}
 

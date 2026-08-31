@@ -1,0 +1,118 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An inventory item in the shop catalog",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique product identifier" },
+        "sku": { "type": "string", "description": "Stock keeping unit code" },
+        "name": { "type": "string", "description": "Product display name" },
+        "category": { "type": "string", "description": "Product category" },
+        "costPrice": { "type": "number", "description": "Purchase / cost basis price per unit" },
+        "sellingPrice": { "type": "number", "description": "Retail / selling price per unit" },
+        "stock": { "type": "number", "description": "Current quantity in stock" },
+        "minThreshold": { "type": "number", "description": "Low stock warning threshold" },
+        "unit": { "type": "string", "description": "Unit of measurement (e.g. pcs, kg, ltr)" },
+        "notes": { "type": "string", "description": "Optional notes or barcode information" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last updated timestamp" }
+      },
+      "required": ["id", "sku", "name", "costPrice", "sellingPrice", "stock"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Completed point-of-sale invoice transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique transaction ID" },
+        "invoiceNo": { "type": "string", "description": "Human-readable invoice number" },
+        "subtotal": { "type": "number", "description": "Order subtotal before tax and discount" },
+        "taxRate": { "type": "number", "description": "GST / Tax percentage applied" },
+        "taxAmount": { "type": "number", "description": "Tax amount in currency" },
+        "totalAmount": { "type": "number", "description": "Final billed total" },
+        "totalCost": { "type": "number", "description": "Total cost basis of items sold" },
+        "netProfit": { "type": "number", "description": "Gross net pocketed profit from sale" },
+        "profitMargin": { "type": "number", "description": "Profit margin percentage" },
+        "discount": { "type": "number", "description": "Discount applied" },
+        "paymentMethod": { "type": "string", "description": "Payment mode: cash, upi, card, or udhaar" },
+        "paidAmount": { "type": "number", "description": "Amount paid at checkout" },
+        "dueAmount": { "type": "number", "description": "Balance due recorded in udhaar" },
+        "customerId": { "type": "string", "description": "Customer identifier" },
+        "customerName": { "type": "string", "description": "Customer display name" },
+        "customerPhone": { "type": "string", "description": "Customer phone number" },
+        "createdAt": { "type": "string", "description": "Sale timestamp" }
+      },
+      "required": ["id", "invoiceNo", "totalAmount", "paymentMethod", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer profile with udhaar credit balance and ledger transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique customer ID" },
+        "name": { "type": "string", "description": "Customer name" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "email": { "type": "string", "description": "Customer email" },
+        "address": { "type": "string", "description": "Customer street address" },
+        "totalCredit": { "type": "number", "description": "Cumulative credit / udhaar extended" },
+        "totalPaid": { "type": "number", "description": "Cumulative payments received" },
+        "currentBalance": { "type": "number", "description": "Current unpaid balance due" },
+        "createdAt": { "type": "string", "description": "Registration timestamp" },
+        "lastActivityDate": { "type": "string", "description": "Last transaction timestamp" }
+      },
+      "required": ["id", "name"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Store configuration and preferences",
+      "type": "object",
+      "properties": {
+        "shopName": { "type": "string", "description": "Store business name" },
+        "shopType": { "type": "string", "description": "Category / industry template ID" },
+        "currencySymbol": { "type": "string", "description": "Primary currency symbol" },
+        "taxRate": { "type": "number", "description": "Default tax rate percentage" },
+        "enableSound": { "type": "boolean", "description": "Sound effects preference" },
+        "updatedAt": { "type": "string", "description": "Last settings update timestamp" }
+      }
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Staff member profile, payroll, and attendance record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique employee identifier" },
+        "name": { "type": "string", "description": "Staff full name" },
+        "role": { "type": "string", "description": "Staff job title or role" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "email": { "type": "string", "description": "Contact email" },
+        "baseSalary": { "type": "number", "description": "Monthly base salary or hourly rate" },
+        "status": { "type": "string", "description": "Active or inactive employment status" },
+        "joiningDate": { "type": "string", "description": "Joining date string" }
+      },
+      "required": ["id", "name", "role", "baseSalary"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Catalog of all products and current stock in the shop"
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Ledger of completed sales transactions and invoices"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer profiles and credit ledger accounts"
+    },
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Staff member profiles, roles, and payroll"
+    },
+    "/settings/{settingId}": {
+      "schema": "StoreSettings",
+      "description": "Store global configuration, branding, and billing preferences"
+    }
+  }
+}

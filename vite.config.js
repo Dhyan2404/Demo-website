@@ -2,18 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './', // Ensures assets load properly on GitHub Pages, Vercel, Netlify, and custom domains
+  base: './',
   plugins: [react()],
   server: {
-    port: 5173,
-    host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
+    port: 3000,
+    host: '0.0.0.0',
+    allowedHosts: true,
   },
   build: {
     outDir: 'dist',

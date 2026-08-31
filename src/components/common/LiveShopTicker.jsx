@@ -50,56 +50,55 @@ export const LiveShopTicker = () => {
   }, [customers]);
 
   return (
-    <div className="w-full bg-slate-100/70 dark:bg-white/[0.02] border-b border-slate-200/80 dark:border-white/[0.06] py-1.5 px-3 sm:px-8 text-xs select-none overflow-hidden">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+    <div className="w-full bg-slate-100/70 dark:bg-white/[0.02] border-b border-slate-200/80 dark:border-white/[0.06] py-1.5 px-4 sm:px-8 text-xs select-none">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-slate-600 dark:text-gray-400">
         
-        {/* Live dot + label */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="relative flex h-1.5 w-1.5">
+        {/* Left: Clean Status Indicator */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="hidden sm:block text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400">Live</span>
+          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400">
+            Realtime Feed
+          </span>
         </div>
 
-        {/* Scrollable data — on mobile shows only 2 key items */}
-        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto custom-scrollbar whitespace-nowrap font-medium flex-1 min-w-0">
-          {/* Clock — always visible */}
-          <span className="flex items-center gap-1 font-mono text-slate-700 dark:text-gray-300 text-[11px]">
-            <Clock className="w-3 h-3 text-slate-400 dark:text-gray-500 shrink-0" />
+        {/* Center: Stream Items */}
+        <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto custom-scrollbar whitespace-nowrap text-xs font-medium">
+          <span className="flex items-center gap-1.5 font-mono text-slate-700 dark:text-gray-300">
+            <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
             <span>{time}</span>
           </span>
 
-          {/* Today's Profit — always visible */}
-          <span className="flex items-center gap-1 text-[11px]">
-            <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="text-slate-600 dark:text-gray-400">Profit: <strong className="text-emerald-700 dark:text-emerald-400 font-mono">{formatCurrency(todayProfit, currency)}</strong></span>
+          <span className="flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Today's Profit: <strong className="text-emerald-700 dark:text-emerald-400 font-mono font-bold">+{formatCurrency(todayProfit, currency)}</strong></span>
           </span>
 
-          {/* Orders — hidden on xs */}
-          <span className="hidden sm:flex items-center gap-1 text-[11px]">
-            <Zap className="w-3 h-3 text-slate-400 dark:text-gray-500 shrink-0" />
-            <span className="text-slate-600 dark:text-gray-400">Orders: <strong className="text-slate-900 dark:text-white">{todaySalesCount}</strong></span>
+          <span className="flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
+            <span>Today: <strong className="text-slate-900 dark:text-white font-semibold">{todaySalesCount} orders</strong></span>
           </span>
 
-          {/* Low stock alert — hidden on xs */}
           {lowStockItem && (
-            <span className="hidden sm:flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300 font-semibold">
-              <ShieldAlert className="w-3 h-3 shrink-0" />
-              <span>Low: {lowStockItem.name} ({lowStockItem.stock})</span>
+            <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-semibold">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Low Stock: {lowStockItem.name} ({lowStockItem.stock})</span>
             </span>
           )}
 
-          {/* Pending credit — hidden on xs */}
-          <span className="hidden md:flex items-center gap-1 text-[11px]">
-            <CreditCard className="w-3 h-3 text-slate-400 dark:text-gray-500 shrink-0" />
-            <span className="text-slate-600 dark:text-gray-400">Credit: <strong className="text-slate-900 dark:text-white font-mono">{formatCurrency(pendingUdhaarTotal, currency)}</strong></span>
+          <span className="flex items-center gap-1.5">
+            <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
+            <span>Pending Credit: <strong className="text-slate-900 dark:text-white font-mono font-semibold">{formatCurrency(pendingUdhaarTotal, currency)}</strong></span>
           </span>
         </div>
 
-        <div className="hidden lg:block text-[10px] text-slate-400 dark:text-gray-500 font-medium shrink-0">Offline Ready</div>
+        {/* Right: Clean offline status */}
+        <div className="hidden md:flex items-center gap-1.5 shrink-0 text-[11px] text-slate-500 dark:text-gray-400 font-medium">
+          <span>Single-Owner Edition</span>
+        </div>
       </div>
     </div>
   );
-
 };

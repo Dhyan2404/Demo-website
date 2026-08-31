@@ -2,22 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { initialSettings } from '../services/mockData.js';
 
-// Auto-detect mobile screen to default to 2D zero-lag mode
-const isMobileDevice = () => {
-  if (typeof window === 'undefined') return false;
-  return window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-};
-
 export const useThemeStore = create(
   persist(
     (set, get) => ({
       isDarkMode: true,
       soundEnabled: true,
-      fidelity3D: isMobileDevice() ? 'off' : 'high', // 'high' | 'lite' | 'off' (default 2D on phones!)
+      fidelity3D: 'off', // Default to 2D 'off' (instant zero-lag performance)
       settings: initialSettings,
       activeModal: null, // null | 'pos' | 'product_form' | 'customer_form' | 'record_payment' | 'receipt' | 'settings' | 'quick_search' | 'stock_adjust' | 'whatsapp_templates'
       modalData: null,
       toast: null, // { type: 'success'|'error'|'info'|'warning', message: string }
+      isMobileDrawerOpen: false,
 
       toggleTheme: () => {
         const next = !get().isDarkMode;
@@ -47,6 +42,9 @@ export const useThemeStore = create(
       },
 
       setFidelity3D: (mode) => set({ fidelity3D: mode }),
+
+      setMobileDrawerOpen: (isOpen) => set({ isMobileDrawerOpen: isOpen }),
+      toggleMobileDrawer: () => set((s) => ({ isMobileDrawerOpen: !s.isMobileDrawerOpen })),
 
       updateSettings: (newSettings) => {
         set((state) => ({

@@ -37,6 +37,14 @@ export const InventoryTable = () => {
   const adjustStock = useInventoryStore((state) => state.adjustStock);
   const deleteProduct = useInventoryStore((state) => state.deleteProduct);
 
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const pageSize = 20;
+
+  // Reset to page 1 on filter or search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, stockFilter, sortBy, sortOrder]);
+
   const categories = useMemo(() => {
     const set = new Set((products || []).map((p) => p.category || 'General'));
     return ['All', ...Array.from(set)];
@@ -82,6 +90,14 @@ export const InventoryTable = () => {
     });
   }, [products, searchQuery, selectedCategory, stockFilter, sortBy, sortOrder]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (safePage - 1) * pageSize;
+    return filteredProducts.slice(startIndex, startIndex + pageSize);
+  }, [filteredProducts, safePage, pageSize]);
+
   const { totalCostValue, totalRetailValue, projectedProfit } = useMemo(() => {
     const costVal = (products || []).reduce((acc, p) => acc + ((Number(p.costPrice) || 0) * (Number(p.stock) || 0)), 0);
     const retailVal = (products || []).reduce((acc, p) => acc + ((Number(p.sellingPrice) || 0) * (Number(p.stock) || 0)), 0);
@@ -90,10 +106,8 @@ export const InventoryTable = () => {
   }, [products]);
 
   const handleDelete = (product) => {
-    if (window.confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
-      deleteProduct(product.id || product._id);
-      showToast(`Deleted ${product.name}`, 'info');
-    }
+    deleteProduct(product.id || product._id);
+    showToast(`Deleted ${product.name} from inventory`, 'info');
   };
 
   return (
@@ -249,7 +263,7 @@ export const InventoryTable = () => {
             </thead>
 
             <tbody className="divide-y divide-slate-200 dark:divide-white/[0.04] text-xs">
-              {filteredProducts.map((p) => {
+              {paginatedProducts.map((p) => {
                 const sellP = Number(p.sellingPrice) || 0;
                 const costP = Number(p.costPrice) || 0;
                 const profit = sellP - costP;
@@ -376,6 +390,41 @@ export const InventoryTable = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {filteredProducts.length > 0 && (
+          <div className="p-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="text-slate-500 dark:text-gray-400">
+              Showing <span className="font-bold text-slate-900 dark:text-white">{(safePage - 1) * pageSize + 1}</span> to{' '}
+              <span className="font-bold text-slate-900 dark:text-white">{Math.min(safePage * pageSize, filteredProducts.length)}</span> of{' '}
+              <span className="font-bold text-slate-900 dark:text-white">{filteredProducts.length}</span> products
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-1 px-2">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{safePage}</span>
+                <span className="text-slate-400 dark:text-gray-600">/</span>
+                <span className="text-slate-600 dark:text-gray-400">{totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

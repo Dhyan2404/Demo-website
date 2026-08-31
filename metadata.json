@@ -1,0 +1,6 @@
+{
+  "name": "SmartShop PRO",
+  "description": "Offline-first 3D smart inventory valuation, real-time gross margin calculation, express POS billing, and customer Udhaar credit management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

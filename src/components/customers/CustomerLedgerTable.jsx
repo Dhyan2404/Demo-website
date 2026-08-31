@@ -30,6 +30,7 @@ export const CustomerLedgerTable = () => {
   const filterStatus = useCustomerStore((state) => state.filterStatus);
   const setFilterStatus = useCustomerStore((state) => state.setFilterStatus);
   const addCustomer = useCustomerStore((state) => state.addCustomer);
+  const deleteCustomer = useCustomerStore((state) => state.deleteCustomer);
   const totalUdhaarPending = useMemo(() => {
     return (customers || []).reduce((acc, c) => acc + (Number(c.currentBalance) || 0), 0);
   }, [customers]);
@@ -70,15 +71,8 @@ export const CustomerLedgerTable = () => {
   };
 
   const handleDelete = (cust) => {
-    if (cust.currentBalance > 0) {
-      if (!window.confirm(`Warning: ${cust.name} still has an outstanding Udhaar balance of ${formatCurrency(cust.currentBalance, currency)}. Delete anyway?`)) {
-        return;
-      }
-    } else {
-      if (!window.confirm(`Are you sure you want to delete customer "${cust.name}"?`)) return;
-    }
     deleteCustomer(cust.id || cust._id);
-    showToast(`Deleted ${cust.name}`, 'info');
+    showToast(`Deleted customer ${cust.name}`, 'info');
   };
 
   return (
@@ -87,10 +81,10 @@ export const CustomerLedgerTable = () => {
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+            <span className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400">
               <CreditCard className="w-5 h-5" />
             </span>
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Customer Credit (Udhaar) Ledger</h2>
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Customer Credit (Udhaar) Ledger</h2>
           </div>
           <p className="text-xs text-gray-400 mt-1">
             Track customer debts, log partial payments, view statements & send 1-click WhatsApp payment reminders

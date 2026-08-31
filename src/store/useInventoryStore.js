@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { initialProducts } from '../services/mockData.js';
 import { apiService } from '../services/api.js';
+import { firestoreService } from '../services/firestoreService.js';
 
 export const useInventoryStore = create(
   persist(
@@ -47,16 +48,18 @@ export const useInventoryStore = create(
           products: [newProduct, ...state.products]
         }));
 
-        // Try syncing with API in background
+        // Sync with Firestore and local API
+        firestoreService.saveProduct(newProduct).catch(() => {});
         apiService.createProduct(newProduct).catch(() => {});
         return newProduct;
       },
 
       updateProduct: async (id, updatedData) => {
+        let updatedItem = null;
         set((state) => ({
           products: state.products.map((p) => {
             if (p.id === id || p._id === id) {
-              return {
+              updatedItem = {
                 ...p,
                 ...updatedData,
                 sku: (updatedData.sku || p.sku).toUpperCase(),
@@ -66,30 +69,39 @@ export const useInventoryStore = create(
                 minThreshold: Number(updatedData.minThreshold ?? p.minThreshold),
                 updatedAt: new Date().toISOString(),
               };
+              return updatedItem;
             }
             return p;
           })
         }));
 
+        if (updatedItem) {
+          firestoreService.saveProduct(updatedItem).catch(() => {});
+        }
         apiService.updateProduct(id, updatedData).catch(() => {});
       },
 
       adjustStock: async (id, amount) => {
         const num = Number(amount) || 0;
+        let updatedItem = null;
         set((state) => ({
           products: state.products.map((p) => {
             if (p.id === id || p._id === id) {
               const newStock = Math.max(0, p.stock + num);
-              return {
+              updatedItem = {
                 ...p,
                 stock: newStock,
                 updatedAt: new Date().toISOString(),
               };
+              return updatedItem;
             }
             return p;
           })
         }));
 
+        if (updatedItem) {
+          firestoreService.saveProduct(updatedItem).catch(() => {});
+        }
         apiService.adjustStock(id, num).catch(() => {});
       },
 
@@ -97,22 +109,28 @@ export const useInventoryStore = create(
         set((state) => ({
           products: state.products.filter((p) => p.id !== id && p._id !== id)
         }));
+        firestoreService.deleteProduct(id).catch(() => {});
         apiService.deleteProduct(id).catch(() => {});
       },
 
       restockItem: (id, targetStock = 20) => {
+        let updatedItem = null;
         set((state) => ({
           products: state.products.map((p) => {
             if (p.id === id || p._id === id) {
-              return {
+              updatedItem = {
                 ...p,
                 stock: Math.max(p.stock, targetStock),
                 updatedAt: new Date().toISOString(),
               };
+              return updatedItem;
             }
             return p;
           })
         }));
+        if (updatedItem) {
+          firestoreService.saveProduct(updatedItem).catch(() => {});
+        }
       },
 
       importProducts: (productsList) => {

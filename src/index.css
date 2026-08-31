@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --color-bg-primary: 250, 250, 250;
+    --color-bg-primary: 248, 250, 252;
     --color-surface: 255, 255, 255;
-    --color-border: 228, 231, 236;
-    --color-text-primary: 17, 24, 39;
-    --color-text-secondary: 100, 116, 139;
+    --color-border: 203, 213, 225;
+    --color-text-primary: 15, 23, 42;
+    --color-text-secondary: 71, 85, 105;
   }
 
   .dark {
@@ -24,7 +24,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.01em;
-    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
@@ -145,30 +145,30 @@
 
 /* Luxury Minimalist Glassmorphism (Linear / Apple style) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 8px 24px -6px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 6px 16px -4px rgba(0, 0, 0, 0.03);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .glass-panel {
-  background: rgba(15, 18, 28, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(15, 18, 28, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 30px -6px rgba(0, 0, 0, 0.4);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.02);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.03);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .glass-card {
   background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25);
 }
@@ -281,29 +281,5 @@
   }
   .no-print {
     display: none !important;
-  }
-}
-
-/* ── iOS / iPhone notch / safe-area support ── */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .pb-safe {
-    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
-  }
-  nav.fixed.bottom-0 {
-    padding-bottom: max(env(safe-area-inset-bottom), 0.25rem);
-  }
-}
-
-/* ── Mobile touch optimizations ── */
-@media (max-width: 640px) {
-  /* Ensure buttons have a minimum 44x44px tap area */
-  button, a[role="button"] {
-    min-height: 36px;
-  }
-
-  /* Prevent text from being too tiny */
-  input, select, textarea {
-    font-size: 16px !important; /* Prevents iOS auto-zoom */
-    border-radius: 0.75rem;
   }
 }

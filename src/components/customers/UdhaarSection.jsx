@@ -32,6 +32,14 @@ export const UdhaarSection = () => {
   const openModal = useThemeStore((state) => state.openModal);
   const showToast = useThemeStore((state) => state.showToast);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 16;
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus]);
+
   // Compute filtered customers with useMemo
   const filteredCustomers = useMemo(() => {
     return (customers || []).filter((c) => {
@@ -51,6 +59,14 @@ export const UdhaarSection = () => {
       return matchesSearch && matchesFilter;
     });
   }, [customers, searchQuery, filterStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedCustomers = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredCustomers.slice(start, start + pageSize);
+  }, [filteredCustomers, safePage, pageSize]);
 
   // Compute total pending Udhaar with useMemo
   const totalPendingUdhaar = useMemo(() => {
@@ -74,10 +90,8 @@ export const UdhaarSection = () => {
   };
 
   const handleDelete = (id, name) => {
-    if (window.confirm(`Delete customer account for "${name}"?`)) {
-      deleteCustomer(id);
-      showToast(`Removed customer ${name}`, 'info');
-    }
+    deleteCustomer(id);
+    showToast(`Removed customer ${name}`, 'info');
   };
 
   return (
@@ -179,7 +193,7 @@ export const UdhaarSection = () => {
 
       {/* Customer Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filteredCustomers.map((customer) => {
+        {paginatedCustomers.map((customer) => {
           const hasDebt = (customer.currentBalance || 0) > 0;
           return (
             <div
@@ -288,6 +302,41 @@ export const UdhaarSection = () => {
           </div>
         )}
       </div>
+
+      {/* Customer Pagination Controls */}
+      {filteredCustomers.length > pageSize && (
+        <div className="glass-panel p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-slate-500 dark:text-gray-400">
+            Showing <span className="font-bold text-slate-900 dark:text-white">{(safePage - 1) * pageSize + 1}</span> to{' '}
+            <span className="font-bold text-slate-900 dark:text-white">{Math.min(safePage * pageSize, filteredCustomers.length)}</span> of{' '}
+            <span className="font-bold text-slate-900 dark:text-white">{filteredCustomers.length}</span> customers
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={safePage <= 1}
+              className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer"
+            >
+              Previous
+            </button>
+
+            <div className="flex items-center gap-1 px-2">
+              <span className="font-bold text-amber-600 dark:text-amber-400">{safePage}</span>
+              <span className="text-slate-400 dark:text-gray-600">/</span>
+              <span className="text-slate-600 dark:text-gray-400">{totalPages}</span>
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safePage >= totalPages}
+              className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Customer Ledger History Statement Modal */}
       {selectedCustomerForHistory && (

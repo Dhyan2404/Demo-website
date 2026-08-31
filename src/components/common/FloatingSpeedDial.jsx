@@ -41,7 +41,7 @@ export const FloatingSpeedDial = () => {
   };
 
   return (
-    <div className="hidden lg:flex fixed bottom-8 right-6 z-40 flex-col items-end">
+    <div className="fixed bottom-20 lg:bottom-8 right-4 sm:right-6 z-40 flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div

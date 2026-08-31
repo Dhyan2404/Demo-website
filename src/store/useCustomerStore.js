@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { initialCustomers } from '../services/mockData.js';
 import { apiService } from '../services/api.js';
+import { firestoreService } from '../services/firestoreService.js';
 
 export const useCustomerStore = create(
   persist(
@@ -45,18 +46,25 @@ export const useCustomerStore = create(
           customers: [newCustomer, ...state.customers]
         }));
 
+        firestoreService.saveCustomer(newCustomer).catch(() => {});
         apiService.createCustomer(newCustomer).catch(() => {});
         return newCustomer;
       },
 
       updateCustomer: (id, updatedFields) => {
+        let updatedCust = null;
         set((state) => ({
-          customers: state.customers.map((c) =>
-            c.id === id || c._id === id
-              ? { ...c, ...updatedFields, lastActivityDate: new Date().toISOString() }
-              : c
-          )
+          customers: state.customers.map((c) => {
+            if (c.id === id || c._id === id) {
+              updatedCust = { ...c, ...updatedFields, lastActivityDate: new Date().toISOString() };
+              return updatedCust;
+            }
+            return c;
+          })
         }));
+        if (updatedCust) {
+          firestoreService.saveCustomer(updatedCust).catch(() => {});
+        }
       },
 
       recordPayment: async (customerId, amount, paymentMethod = 'cash', note = 'Payment received') => {
@@ -72,23 +80,28 @@ export const useCustomerStore = create(
           note,
         };
 
+        let updatedCust = null;
         set((state) => ({
           customers: state.customers.map((c) => {
             if (c.id === customerId || c._id === customerId) {
               const updatedPaid = (Number(c.totalPaid) || 0) + payNum;
               const updatedBalance = Math.max(0, (Number(c.currentBalance) || 0) - payNum);
-              return {
+              updatedCust = {
                 ...c,
                 totalPaid: updatedPaid,
                 currentBalance: updatedBalance,
                 transactions: [newTx, ...(c.transactions || [])],
                 lastActivityDate: new Date().toISOString(),
               };
+              return updatedCust;
             }
             return c;
           })
         }));
 
+        if (updatedCust) {
+          firestoreService.saveCustomer(updatedCust).catch(() => {});
+        }
         apiService.recordPayment(customerId, { amount: payNum, paymentMethod, note }).catch(() => {});
         return true;
       },
@@ -108,13 +121,14 @@ export const useCustomerStore = create(
           note: txData.description || `POS Sale Invoice #${txData.invoiceId || ''}`,
         };
 
+        let updatedCust = null;
         set((state) => ({
           customers: state.customers.map((c) => {
             if (c.id === customerId || c._id === customerId) {
               const updatedCredit = (Number(c.totalCredit) || 0) + amount;
               const updatedPaid = (Number(c.totalPaid) || 0) + paid;
               const updatedBalance = (Number(c.currentBalance) || 0) + netDebtIncrease;
-              return {
+              updatedCust = {
                 ...c,
                 totalCredit: updatedCredit,
                 totalPaid: updatedPaid,
@@ -122,10 +136,15 @@ export const useCustomerStore = create(
                 transactions: [newTx, ...(c.transactions || [])],
                 lastActivityDate: new Date().toISOString(),
               };
+              return updatedCust;
             }
             return c;
           })
         }));
+
+        if (updatedCust) {
+          firestoreService.saveCustomer(updatedCust).catch(() => {});
+        }
       },
 
       addCreditToCustomer: (customerId, amount, invoiceNo, note = '') => {
@@ -145,6 +164,7 @@ export const useCustomerStore = create(
         set((state) => ({
           customers: state.customers.filter((c) => c.id !== id && c._id !== id)
         }));
+        firestoreService.deleteCustomer(id).catch(() => {});
         apiService.deleteCustomer(id).catch(() => {});
       },
 

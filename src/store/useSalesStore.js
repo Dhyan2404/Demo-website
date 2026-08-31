@@ -4,6 +4,7 @@ import { initialSales } from '../services/mockData.js';
 import { useInventoryStore } from './useInventoryStore.js';
 import { useCustomerStore } from './useCustomerStore.js';
 import { apiService } from '../services/api.js';
+import { firestoreService } from '../services/firestoreService.js';
 
 export const useSalesStore = create(
   persist(
@@ -237,7 +238,8 @@ export const useSalesStore = create(
           lastCompletedSale: newSale,
         }));
 
-        // 4. Fire remote API call asynchronously
+        // 4. Fire cloud Firestore and API call asynchronously
+        firestoreService.saveSale(newSale).catch(() => {});
         apiService.createSale(newSale).catch(() => {});
 
         // 5. Clear cart

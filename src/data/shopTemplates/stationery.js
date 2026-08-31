@@ -1,0 +1,56 @@
+// Stationery & Books Store - ~100 items
+export const stationeryProducts = [
+  // Notebooks, Registers & Paper
+  { name: 'Classmate Long Notebook Single Line 240 Pages', category: 'Notebooks & Paper', costPrice: 58, sellingPrice: 75, stock: 80, unit: 'pcs', minThreshold: 15, sku: 'STN-NB-001' },
+  { name: 'Classmate Long Notebook Unruled 240 Pages', category: 'Notebooks & Paper', costPrice: 58, sellingPrice: 75, stock: 50, unit: 'pcs', minThreshold: 10, sku: 'STN-NB-002' },
+  { name: 'Classmate Softcover Notebook 172 Pages', category: 'Notebooks & Paper', costPrice: 38, sellingPrice: 50, stock: 90, unit: 'pcs', minThreshold: 20, sku: 'STN-NB-003' },
+  { name: 'Classmate 4-Line English Notebook 172 Pages', category: 'Notebooks & Paper', costPrice: 38, sellingPrice: 50, stock: 60, unit: 'pcs', minThreshold: 15, sku: 'STN-NB-004' },
+  { name: 'Classmate Square Math Notebook 172 Pages', category: 'Notebooks & Paper', costPrice: 38, sellingPrice: 50, stock: 60, unit: 'pcs', minThreshold: 15, sku: 'STN-NB-005' },
+  { name: 'Hardbound Accounts Register 4 Quire 384 Pages', category: 'Notebooks & Paper', costPrice: 140, sellingPrice: 190, stock: 30, unit: 'pcs', minThreshold: 6, sku: 'STN-NB-006' },
+  { name: 'Hardbound Attendance Register 2 Quire', category: 'Notebooks & Paper', costPrice: 85, sellingPrice: 120, stock: 25, unit: 'pcs', minThreshold: 5, sku: 'STN-NB-007' },
+  { name: 'JK Copier A4 Paper 75 GSM (Ream of 500 Sheets)', category: 'Notebooks & Paper', costPrice: 280, sellingPrice: 340, stock: 40, unit: 'ream', minThreshold: 10, sku: 'STN-NB-008' },
+  { name: 'Bilt Matrix Executive Spiral Diary A5', category: 'Notebooks & Paper', costPrice: 120, sellingPrice: 180, stock: 25, unit: 'pcs', minThreshold: 5, sku: 'STN-NB-009' },
+  { name: 'Drawing Book Large A3 Size 40 Pages', category: 'Notebooks & Paper', costPrice: 45, sellingPrice: 65, stock: 40, unit: 'pcs', minThreshold: 8, sku: 'STN-NB-010' },
+  { name: 'Color Chart Papers Full Sheet (Assorted Pack 10)', category: 'Notebooks & Paper', costPrice: 50, sellingPrice: 80, stock: 35, unit: 'pack', minThreshold: 8, sku: 'STN-NB-011' },
+  { name: 'Sticky Notes Pad 3x3 Yellow 100 Sheets', category: 'Notebooks & Paper', costPrice: 22, sellingPrice: 35, stock: 60, unit: 'pad', minThreshold: 12, sku: 'STN-NB-012' },
+
+  // Pens, Pencils & Writing
+  { name: 'Reynolds 045 Fine Carbure Ball Pen Blue (Pack of 5)', category: 'Pens & Pencils', costPrice: 35, sellingPrice: 50, stock: 70, unit: 'pack', minThreshold: 15, sku: 'STN-PEN-001' },
+  { name: 'Cello Butterflow Blue Ball Pen (Pack of 5)', category: 'Pens & Pencils', costPrice: 42, sellingPrice: 55, stock: 80, unit: 'pack', minThreshold: 20, sku: 'STN-PEN-002' },
+  { name: 'Cello Gripper Blue Ball Pen (Jar of 20)', category: 'Pens & Pencils', costPrice: 140, sellingPrice: 200, stock: 25, unit: 'jar', minThreshold: 5, sku: 'STN-PEN-003' },
+  { name: 'Hauser XO Ball Pen Blue (Pack of 5)', category: 'Pens & Pencils', costPrice: 38, sellingPrice: 50, stock: 60, unit: 'pack', minThreshold: 12, sku: 'STN-PEN-004' },
+  { name: 'Pentonic Black Gel Pen 0.7mm (Pack of 10)', category: 'Pens & Pencils', costPrice: 75, sellingPrice: 100, stock: 50, unit: 'box', minThreshold: 10, sku: 'STN-PEN-005' },
+  { name: 'Pilot V5 Hi-Techpoint Liquid Ink Rollerball Pen', category: 'Pens & Pencils', costPrice: 48, sellingPrice: 60, stock: 50, unit: 'pcs', minThreshold: 10, sku: 'STN-PEN-006' },
+  { name: 'Pilot V7 Hi-Techpoint Liquid Ink Pen (Blue/Black)', category: 'Pens & Pencils', costPrice: 48, sellingPrice: 60, stock: 45, unit: 'pcs', minThreshold: 10, sku: 'STN-PEN-007' },
+  { name: 'Uniball Eye UB-150 Fine Roller Pen Blue', category: 'Pens & Pencils', costPrice: 70, sellingPrice: 90, stock: 35, unit: 'pcs', minThreshold: 8, sku: 'STN-PEN-008' },
+  { name: 'Camlin Kokuyo Whiteboard Marker Assorted (Pack 4)', category: 'Pens & Pencils', costPrice: 85, sellingPrice: 120, stock: 30, unit: 'pack', minThreshold: 6, sku: 'STN-PEN-009' },
+  { name: 'Camlin Permanent Marker Black (Pack of 10)', category: 'Pens & Pencils', costPrice: 110, sellingPrice: 150, stock: 25, unit: 'box', minThreshold: 5, sku: 'STN-PEN-010' },
+  { name: 'Faber-Castell Textliner 48 Highlighter (Set of 5)', category: 'Pens & Pencils', costPrice: 115, sellingPrice: 150, stock: 30, unit: 'pack', minThreshold: 6, sku: 'STN-PEN-011' },
+  { name: 'Apsara Platinum Extra Dark Pencils (Box of 10)', category: 'Pens & Pencils', costPrice: 42, sellingPrice: 60, stock: 65, unit: 'box', minThreshold: 15, sku: 'STN-PEN-012' },
+  { name: 'Natraj 621 Bold Pencils (Box of 10 with Eraser)', category: 'Pens & Pencils', costPrice: 32, sellingPrice: 45, stock: 60, unit: 'box', minThreshold: 15, sku: 'STN-PEN-013' },
+  { name: 'Camlin 0.5mm Mechanical Pencil with Lead Tube', category: 'Pens & Pencils', costPrice: 28, sellingPrice: 40, stock: 40, unit: 'set', minThreshold: 8, sku: 'STN-PEN-014' },
+
+  // Art, Craft & Geometry
+  { name: 'Camlin Scholar Mathematical Geometry Box', category: 'Art & Geometry', costPrice: 85, sellingPrice: 120, stock: 45, unit: 'box', minThreshold: 10, sku: 'STN-ART-001' },
+  { name: 'Classmate Asteroid Geometry Box with Compass', category: 'Art & Geometry', costPrice: 110, sellingPrice: 150, stock: 30, unit: 'box', minThreshold: 6, sku: 'STN-ART-002' },
+  { name: 'Faber-Castell 24 Triangular Color Pencils Set', category: 'Art & Geometry', costPrice: 120, sellingPrice: 160, stock: 30, unit: 'set', minThreshold: 6, sku: 'STN-ART-003' },
+  { name: 'Camlin Oil Pastels 25 Shades Pack', category: 'Art & Geometry', costPrice: 80, sellingPrice: 110, stock: 35, unit: 'box', minThreshold: 8, sku: 'STN-ART-004' },
+  { name: 'Camlin Artist Acrylic Colors Set 12 Shades', category: 'Art & Geometry', costPrice: 190, sellingPrice: 260, stock: 20, unit: 'set', minThreshold: 4, sku: 'STN-ART-005' },
+  { name: 'Fevicol MR Squeeze Bottle 200g', category: 'Art & Geometry', costPrice: 45, sellingPrice: 60, stock: 40, unit: 'bot', minThreshold: 10, sku: 'STN-ART-006' },
+  { name: 'Fevikwik Instant Adhesive 1g Drop (Pack 20)', category: 'Art & Geometry', costPrice: 75, sellingPrice: 100, stock: 30, unit: 'card', minThreshold: 8, sku: 'STN-ART-007' },
+  { name: 'Fevistik Super Glue Stick 15g', category: 'Art & Geometry', costPrice: 28, sellingPrice: 40, stock: 50, unit: 'pcs', minThreshold: 12, sku: 'STN-ART-008' },
+  { name: 'Kangaro Desk Stapler No. 10 with Pins Box', category: 'Art & Geometry', costPrice: 65, sellingPrice: 95, stock: 35, unit: 'set', minThreshold: 8, sku: 'STN-ART-009' },
+  { name: 'Kangaro Stapler Pins No. 10 (Box of 20 Packets)', category: 'Art & Geometry', costPrice: 90, sellingPrice: 130, stock: 25, unit: 'box', minThreshold: 5, sku: 'STN-ART-010' },
+  { name: 'Scotch Transparent Cello Tape 1 Inch x 65m', category: 'Art & Geometry', costPrice: 32, sellingPrice: 48, stock: 45, unit: 'roll', minThreshold: 10, sku: 'STN-ART-011' },
+  { name: 'Brown Packing Box Tape 2 Inch x 50m', category: 'Art & Geometry', costPrice: 45, sellingPrice: 70, stock: 35, unit: 'roll', minThreshold: 8, sku: 'STN-ART-012' },
+
+  // Files, Folders & Office Essentials
+  { name: 'Solo Clear Display Book Folder A4 (20 Pockets)', category: 'Office Supplies', costPrice: 70, sellingPrice: 110, stock: 30, unit: 'pcs', minThreshold: 6, sku: 'STN-OFC-001' },
+  { name: 'Cobra Spring File Heavy Duty Board (Pack of 5)', category: 'Office Supplies', costPrice: 85, sellingPrice: 130, stock: 25, unit: 'pack', minThreshold: 5, sku: 'STN-OFC-002' },
+  { name: 'Plastic Button Folder L-Shape A4 (Pack 10)', category: 'Office Supplies', costPrice: 90, sellingPrice: 150, stock: 30, unit: 'pack', minThreshold: 6, sku: 'STN-OFC-003' },
+  { name: 'Citizen CT-512 Basic Desktop Calculator 12 Digits', category: 'Office Supplies', costPrice: 220, sellingPrice: 320, stock: 15, unit: 'pcs', minThreshold: 3, sku: 'STN-OFC-004' },
+  { name: 'Casio FX-991EX Scientific Calculator', category: 'Office Supplies', costPrice: 1150, sellingPrice: 1450, stock: 8, unit: 'pcs', minThreshold: 2, sku: 'STN-OFC-005' },
+  { name: 'Steel Scissors 8.5 Inch Heavy Duty', category: 'Office Supplies', costPrice: 55, sellingPrice: 85, stock: 25, unit: 'pcs', minThreshold: 5, sku: 'STN-OFC-006' },
+  { name: 'Linc / Natraj Eraser Non-Dust (Box of 20)', category: 'Office Supplies', costPrice: 60, sellingPrice: 100, stock: 40, unit: 'box', minThreshold: 10, sku: 'STN-OFC-007' },
+  { name: 'Apsara Long Point Pencil Sharpener (Jar 20)', category: 'Office Supplies', costPrice: 70, sellingPrice: 100, stock: 30, unit: 'jar', minThreshold: 8, sku: 'STN-OFC-008' },
+];

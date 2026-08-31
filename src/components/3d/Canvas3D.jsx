@@ -76,15 +76,14 @@ export const Canvas3D = () => {
   const fidelity3D = useThemeStore((state) => state.fidelity3D);
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const [hasWebGL, setHasWebGL] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     try {
-      const mobile = window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      setIsMobile(mobile);
-
       const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      const gl =
+        canvas.getContext('webgl2') ||
+        canvas.getContext('webgl') ||
+        canvas.getContext('experimental-webgl');
       if (!gl) {
         setHasWebGL(false);
       }
@@ -93,14 +92,17 @@ export const Canvas3D = () => {
     }
   }, []);
 
-  // On mobile phone screens, default to 2D CSS background unless explicitly forced by desktop
-  if (fidelity3D === 'off' || !hasWebGL || isMobile) {
+  // When 3D is set to 'off' or WebGL is not available, render ultra-smooth zero-overhead 2D background
+  if (fidelity3D === 'off' || !hasWebGL) {
     return <AmbientCSSBackground isDarkMode={isDarkMode} />;
   }
 
   return (
     <ErrorBoundary fallback={<AmbientCSSBackground isDarkMode={isDarkMode} />}>
-      <div className="canvas-bg-container pointer-events-none">
+      {/* 2D ambient gradient mesh placed behind 3D elements */}
+      <AmbientCSSBackground isDarkMode={isDarkMode} />
+
+      <div className="canvas-bg-container pointer-events-none" style={{ zIndex: 1 }}>
         <Canvas
           camera={{ position: [0, 1.2, 5.5], fov: 45 }}
           gl={{ antialias: fidelity3D === 'high', alpha: true, powerPreference: 'high-performance' }}
@@ -120,10 +122,10 @@ export const Canvas3D = () => {
           {/* Floating 3D Cyber Objects */}
           <FloatingInventoryScene />
 
-          {/* Ambient background sparkles */}
+          {/* Ambient background sparkles in high mode */}
           {fidelity3D === 'high' && (
             <Sparkles
-              count={45}
+              count={35}
               scale={12}
               size={2.5}
               speed={0.3}
@@ -133,8 +135,6 @@ export const Canvas3D = () => {
           )}
         </Canvas>
       </div>
-      {/* Dynamic Animated Ambient Background */}
-      <AmbientCSSBackground isDarkMode={isDarkMode} />
     </ErrorBoundary>
   );
 };

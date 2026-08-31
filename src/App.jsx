@@ -4,6 +4,7 @@ import { Navbar } from './components/common/Navbar.jsx';
 import { LiveShopTicker } from './components/common/LiveShopTicker.jsx';
 import { FloatingSpeedDial } from './components/common/FloatingSpeedDial.jsx';
 import { MobileBottomNav } from './components/common/MobileBottomNav.jsx';
+import { MobileActionDrawer } from './components/common/MobileActionDrawer.jsx';
 import { DashboardHero } from './components/dashboard/DashboardHero.jsx';
 import { KPISection } from './components/dashboard/KPISection.jsx';
 import { ProfitOverviewChart } from './components/dashboard/ProfitOverviewChart.jsx';
@@ -12,6 +13,7 @@ import { RecentActivityFeed } from './components/dashboard/RecentActivityFeed.js
 import { POSSection } from './components/pos/POSSection.jsx';
 import { InventorySection } from './components/inventory/InventorySection.jsx';
 import { UdhaarSection } from './components/customers/UdhaarSection.jsx';
+import { EmployeesSection } from './components/employees/EmployeesSection.jsx';
 import { AnalyticsSection } from './components/analytics/AnalyticsSection.jsx';
 
 // Modals & Common Tools
@@ -200,7 +202,20 @@ export function App() {
               </motion.div>
             )}
 
-            {/* View 5: Dedicated Profit Intelligence & Reports */}
+            {/* View 5: Dedicated Staff & Payroll Hub */}
+            {currentView === 'employees' && (
+              <motion.div
+                key="view-employees"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <EmployeesSection />
+              </motion.div>
+            )}
+
+            {/* View 6: Dedicated Profit Intelligence & Reports */}
             {currentView === 'analytics' && (
               <motion.div
                 key="view-analytics"
@@ -248,6 +263,9 @@ export function App() {
 
       {/* Floating Bottom Navigation Dock for Mobile Phones */}
       <MobileBottomNav />
+
+      {/* Mobile Action & Tools Hub Drawer */}
+      <MobileActionDrawer />
 
       {/* Global Interactive Modals */}
       <WelcomeIntroModal isOpen={activeModal === 'welcome_intro'} onClose={closeModal} />
